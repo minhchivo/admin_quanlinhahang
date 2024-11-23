@@ -20,7 +20,7 @@ const db = admin.database(); // Sử dụng Realtime Database
 const app = express();
 const router = express.Router()
 app.use(cors({
-  origin: 'https://5347eef2.user-nhahang.pages.dev/',
+  origin: 'https://minhchivo.github.io',
   credentials: true
 }));
 
