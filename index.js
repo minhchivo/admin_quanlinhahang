@@ -878,10 +878,6 @@ app.post('/api/register', async (req, res) => {
 });
 
 
-
-
-
-
 app.get('/verify-email/:token', async (req, res) => {
   const { token } = req.params;
 
