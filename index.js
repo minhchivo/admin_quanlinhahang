@@ -20,7 +20,7 @@ const db = admin.database(); // Sử dụng Realtime Database
 const app = express();
 const router = express.Router()
 app.use(cors({
-  origin: ['https://minhchivo.github.io', 'http://localhost:3000'],
+  origin: ['https://giaodiennguoidung.web.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
