@@ -668,19 +668,24 @@ app.post('/api/add-invoice', async (req, res) => {
 app.delete('/api/delete-invoice/:invoiceId', async (req, res) => {
   const { invoiceId } = req.params;
 
-  if (!invoiceId || isNaN(invoiceId)) {
+  if (!invoiceId) {
     return res.status(400).json({ error: 'Invoice ID không hợp lệ' });
   }
 
-  const invoiceRef = db.ref(`Invoices/${invoiceId}`);
-  const snapshot = await invoiceRef.once('value');
+  try {
+    const invoiceRef = db.ref(`Invoices/${invoiceId}`);
+    const snapshot = await invoiceRef.once('value');
 
-  if (!snapshot.exists()) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Hóa đơn không tồn tại' });
-  }
+    }
 
-  await invoiceRef.remove();
-  res.json({ message: 'Hóa đơn đã được xóa thành công' });
+    await invoiceRef.remove();
+    res.json({ message: 'Hóa đơn đã được xóa thành công' });
+  } catch (error) {
+    console.error('Lỗi khi xóa hóa đơn:', error);
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi xóa hóa đơn' });
+  }
 });
 
 
@@ -689,21 +694,65 @@ app.put('/api/update-status/:invoiceId', async (req, res) => {
   const { invoiceId } = req.params;
   const { status } = req.body;
 
-  if (!status || !['Chưa thanh toán', 'Đã thanh toán', 'Đang xử lý'].includes(status)) {
-    return res.status(400).json({ error: 'Trạng thái không hợp lệ. Các trạng thái hợp lệ: "Chưa thanh toán", "Đã thanh toán", "Đang xử lý"' });
+  const validStatuses = ['Chưa thanh toán', 'Đã thanh toán', 'Đang xử lý'];
+
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Trạng thái không hợp lệ. Các trạng thái hợp lệ: ${validStatuses.join(', ')}` });
   }
 
-  const invoiceRef = db.ref(`Invoices/${invoiceId}`);
-  const snapshot = await invoiceRef.once('value');
+  try {
+    const invoiceRef = db.ref(`Invoices/${invoiceId}`);
+    const snapshot = await invoiceRef.once('value');
 
-  if (!snapshot.exists()) {
+    if (!snapshot.exists()) {
       return res.status(404).json({ error: 'Hóa đơn không tồn tại' });
-  }
+    }
 
-  await invoiceRef.update({ status });
-  res.json({ message: 'Trạng thái hóa đơn đã được cập nhật thành công' });
+    await invoiceRef.update({ status });
+    res.json({ message: 'Trạng thái hóa đơn đã được cập nhật thành công' });
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái:', error);
+    res.status(500).json({ error: 'Đã xảy ra lỗi khi cập nhật trạng thái hóa đơn' });
+  }
+});
+app.get('/api/get-users', async (req, res) => {
+  try {
+    const messagesRef = db.ref('Messages');
+    const snapshot = await messagesRef.once('value');
+    const data = snapshot.val();
+
+    if (!data) {
+      return res.json([]);
+    }
+
+    const users = Object.keys(data).map(userId => ({
+      userId,
+      name: data[userId].name || 'Người Dùng',
+    }));
+
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Lỗi khi lấy danh sách người dùng.' });
+  }
 });
 
+app.get('/api/get-messages', async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Thiếu userId.' });
+  }
+
+  try {
+    const snapshot = await db.ref(`Messages/${userId}/messages`).once('value');
+    const messages = snapshot.val() ? Object.values(snapshot.val()) : [];
+    res.json({ messages });
+  } catch (error) {
+    console.error('Lỗi khi lấy tin nhắn:', error);
+    res.status(500).json({ error: 'Lỗi server khi lấy tin nhắn.' });
+  }
+});
 
 
 //Người dùng
@@ -1364,7 +1413,195 @@ app.put('/api/cart/:userId/update', async (req, res) => {
   }
 });
 
+//đổi mật khẩu
+app.put('/api/change-password', async (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
 
+  if (!userId || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Thiếu thông tin yêu cầu.' });
+  }
+
+  try {
+    // Lấy thông tin người dùng từ Firebase
+    const userRef = db.ref(`Users/${userId}`);
+    const snapshot = await userRef.once('value');
+    const userData = snapshot.val();
+
+    if (!userData) {
+      return res.status(404).json({ error: 'Người dùng không tồn tại.' });
+    }
+
+    // Kiểm tra mật khẩu hiện tại
+    if (userData.password !== currentPassword) {
+      return res.status(403).json({ error: 'Mật khẩu hiện tại không chính xác.' });
+    }
+
+    // Cập nhật mật khẩu mới
+    await userRef.update({ password: newPassword });
+
+    res.json({ message: 'Mật khẩu đã được đổi thành công.' });
+  } catch (error) {
+    console.error('Lỗi khi đổi mật khẩu:', error);
+    res.status(500).json({ error: 'Lỗi server khi đổi mật khẩu.' });
+  }
+});
+// API để lưu nội dung
+app.post('/api/save-message', async (req, res) => {
+  const { userId, text, sender, timestamp } = req.body;
+
+  if (!userId || !text || !sender || !timestamp) {
+    return res.status(400).json({ error: 'Thiếu dữ liệu bắt buộc.' });
+  }
+
+  try {
+    // Tham chiếu đến Messages của người dùng
+    const userMessagesRef = db.ref(`Messages/${userId}/messages`);
+
+    // Lưu tin nhắn của người dùng
+    await userMessagesRef.push({
+      sender,
+      text,
+      timestamp,
+    });
+
+    console.log(`[INFO] Tin nhắn đã được lưu: ${text} từ ${sender}`);
+
+    // Kiểm tra nếu là tin nhắn đầu tiên và sender là user
+    if (sender === 'user') {
+      const snapshot = await userMessagesRef.once('value');
+      const totalMessages = snapshot.numChildren();
+
+      // Nếu chỉ có 1 tin nhắn trong danh sách, gửi phản hồi tự động
+      if (totalMessages === 1) {
+        const aiReply = "Chào bạn, tôi có thể giúp gì cho bạn?";
+        const aiTimestamp = new Date().toISOString();
+
+        // Lưu tin nhắn phản hồi của AI
+        await userMessagesRef.push({
+          sender: "ai",
+          text: aiReply,
+          timestamp: aiTimestamp,
+        });
+
+        console.log(`[INFO] AI đã gửi phản hồi tự động: ${aiReply}`);
+      }
+    }
+
+    // Phản hồi thành công cho client
+    res.json({ message: 'Tin nhắn đã được lưu thành công.' });
+  } catch (error) {
+    console.error('[ERROR] Lỗi khi lưu tin nhắn:', error);
+    res.status(500).json({ error: 'Lỗi server khi lưu tin nhắn.' });
+  }
+});
+
+
+
+
+
+
+// API để lấy nội dung
+const sendMessage = async () => {
+  if (!userMessage.trim()) return;
+
+  const timestamp = new Date().toISOString();
+
+  // Thêm tin nhắn người dùng vào giao diện
+  const newMessages = [...messages, { sender: "user", text: userMessage }];
+  setMessages(newMessages);
+  setUserMessage("");
+
+  // Gửi tin nhắn và thông tin người dùng tới backend
+  try {
+    const payload = {
+      userId: userInfo?.userId || "guest", // Lấy userId từ userInfo hoặc mặc định là "guest"
+      text: userMessage,
+      timestamp,
+    };
+
+    // Gửi thông tin tới backend qua API
+    await fetch("https://admin-quanlinhahang.onrender.com/api/save-message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.error("Lỗi khi gửi tin nhắn tới backend:", error);
+  }
+
+  // Gửi tin nhắn đến AI
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer YOUR_OPENAI_API_KEY`, // Thay bằng API Key của bạn
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{ role: "user", content: userMessage }],
+      }),
+    });
+
+    const data = await response.json();
+    const aiReply = data.choices[0].message.content;
+
+    // Thêm tin nhắn từ AI vào giao diện
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: "ai", text: aiReply },
+    ]);
+
+    // Lưu tin nhắn của AI vào backend
+    try {
+      const aiPayload = {
+        userId: "ai",
+        text: aiReply,
+        timestamp: new Date().toISOString(),
+      };
+
+      await fetch("https://admin-quanlinhahang.onrender.com/api/save-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(aiPayload),
+      });
+    } catch (error) {
+      console.error("Lỗi khi lưu tin nhắn AI vào backend:", error);
+    }
+  } catch (error) {
+    console.error("Error fetching AI reply:", error);
+    const errorReply = "Xin chào, chúng tôi sẽ cố gắng phản hồi nhanh nhất có thể.";
+
+    // Thêm tin nhắn lỗi từ AI vào giao diện
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: "ai", text: errorReply },
+    ]);
+
+    // Lưu tin nhắn lỗi của AI vào backend
+    try {
+      const errorPayload = {
+        userId: "ai",
+        text: errorReply,
+        timestamp: new Date().toISOString(),
+      };
+
+      await fetch("https://admin-quanlinhahang.onrender.com/api/save-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(errorPayload),
+      });
+    } catch (error) {
+      console.error("Lỗi khi lưu tin nhắn lỗi AI vào backend:", error);
+    }
+  }
+};
 
 // Sử dụng các route từ router
 app.use('/', router);

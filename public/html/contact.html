@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Tin Nhắn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .contact-container {
+            display: flex;
+            gap: 20px;
+            margin: 20px;
+        }
+        .user-list {
+            width: 30%;
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 500px;
+            overflow-y: auto;
+        }
+        .user-item {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .user-item:hover {
+            background-color: #f0f0f0;
+        }
+        .message-detail {
+            width: 70%;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .message-content {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .message-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            background-color: #e6f7ff;
+            text-align: left;
+        }
+        .admin-message {
+            background-color: #fff4e5;
+            text-align: right;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin-top: 10px;
+            resize: none;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contact-container">
+    <div class="user-list" id="userList">
+        <!-- Danh sách người dùng sẽ được nạp tại đây -->
+    </div>
+  
+    <div class="message-detail">
+        <h3 id="selectedUser">Chi Tiết Tin Nhắn</h3>
+        <div class="message-content" id="messageContent">
+            <p>Chọn người dùng để xem chi tiết tin nhắn.</p>
+        </div>
+        <div class="message-reply">
+            <textarea id="replyMessage" placeholder="Nhập tin nhắn phản hồi..."></textarea>
+            <button onclick="sendReply()">Gửi Phản Hồi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeUserId = null; // Lưu trữ userId hiện tại
+let pollingInterval = null; // Để dừng/pause polling khi cần
+
+// Hàm tải danh sách người dùng đã nhắn tin
+function loadUsers() {
+    fetch('/api/get-users')
+        .then(response => response.json())
+        .then(users => {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = ''; // Xóa danh sách cũ
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerText = `${user.name || 'Người Dùng'} (${user.userId})`;
+                userItem.onclick = () => {
+                    activeUserId = user.userId; // Lưu lại userId đang xem
+                    loadMessages(user.userId, user.name);
+                };
+                userList.appendChild(userItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading user list:', error);
+            document.getElementById('userList').innerHTML = '<p>Lỗi khi tải danh sách người dùng.</p>';
+        });
+}
+
+// Hàm tải tin nhắn của người dùng được chọn
+function loadMessages(userId, userName) {
+    document.getElementById('selectedUser').innerText = `Chi Tiết Tin Nhắn Với ${userName}`;
+    fetch(`/api/get-messages?userId=${userId}`)
+        .then((response) => response.json())
+        .then((data) => {
+            const messageContent = document.getElementById('messageContent');
+            messageContent.innerHTML = '';
+
+            const messages = data.messages || [];
+            messages.forEach((message) => {
+                const messageItem = document.createElement('div');
+                messageItem.className = `message-item ${message.sender === 'user' ? 'user-message' : 'admin-message'}`;
+                messageItem.innerText = message.text;
+                messageContent.appendChild(messageItem);
+            });
+
+            // Lưu userId đang được chọn
+            activeUserId = userId;
+
+            // Cuộn xuống cuối khi có tin nhắn mới
+            messageContent.scrollTop = messageContent.scrollHeight;
+
+            // Bắt đầu polling để cập nhật tự động
+            startPolling();
+        })
+        .catch((error) => {
+            console.error('Error loading messages:', error);
+            document.getElementById('messageContent').innerHTML = '<p>Lỗi khi tải tin nhắn.</p>';
+        });
+}
+
+// Hàm polling để tự động tải tin nhắn mới
+function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval); // Xóa polling cũ nếu có
+
+    pollingInterval = setInterval(() => {
+        if (!activeUserId) return; // Không thực hiện nếu không có userId đang chọn
+
+        fetch(`/api/get-messages?userId=${activeUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const messageContent = document.getElementById('messageContent');
+                const existingMessages = Array.from(messageContent.children).map(el => el.innerText);
+
+                const messages = data.messages || [];
+                messages.forEach((message) => {
+                    // Chỉ thêm tin nhắn mới
+                    if (!existingMessages.includes(message.text)) {
+                        const messageItem = document.createElement('div');
+                        messageItem.className = `message-item ${message.sender === 'user' ? 'user-message' : 'admin-message'}`;
+                        messageItem.innerText = message.text;
+                        messageContent.appendChild(messageItem);
+                    }
+                });
+
+                // Cuộn xuống cuối khi có tin nhắn mới
+                messageContent.scrollTop = messageContent.scrollHeight;
+            })
+            .catch(error => console.error('Error polling messages:', error));
+    }, 3000); // Gọi API mỗi 3 giây
+}
+
+// Hàm gửi phản hồi
+window.sendReply = function () {
+    const userId = activeUserId; // Sử dụng activeUserId
+    const text = document.getElementById('replyMessage').value.trim();
+    const adminId = 'admin1';
+
+    if (!userId || !text) {
+        alert('Vui lòng nhập nội dung và chọn người dùng.');
+        return;
+    }
+
+    // Hiển thị tin nhắn ngay lập tức
+    const messageContent = document.getElementById('messageContent');
+    const newMessage = document.createElement('div');
+    newMessage.className = 'message-item admin-message';
+    newMessage.innerText = text;
+    messageContent.appendChild(newMessage);
+
+    // Cuộn xuống cuối
+    messageContent.scrollTop = messageContent.scrollHeight;
+
+    fetch('/api/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId, userId, text }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('replyMessage').value = ''; // Xóa ô nhập
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Không thể gửi phản hồi.');
+    });
+};
+
+
+// Tải danh sách người dùng khi trang được tải
+loadUsers();
+startPolling(); // Bắt đầu polling ngay khi tải trang
+
+</script>
+
+</body>
+</html>
