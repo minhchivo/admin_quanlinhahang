@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lí thức ăn</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <style>
+        #add-food-form {
+            display: none; /* Form sẽ ẩn mặc định */
+        }
+    </style>
+</head>
+<body>
+    <h1>Quản lí thức ăn</h1>
+    <button id="show-add-food-btn">Thêm Món Mới</button>
+    <form id="add-food-form" enctype="multipart/form-data">
+        <h2 id="food-form-title">Thêm Món Mới</h2>
+        <input type="text" id="food-name" placeholder="Tên món" required />
+        <input type="number" id="food-price" placeholder="Giá" required />
+        <input type="file" id="food-image" accept="image/*" />
+    
+        <textarea id="food-description" placeholder="Mô tả" required></textarea>
+        <!-- Sử dụng bảng chọn select cho phân loại -->
+        <select id="food-category" required>
+            <option value="">Chọn phân loại</option>
+            <option value="Món khai vị">Món khai vị</option>
+            <option value="Món chính">Món chính</option>
+            <option value="Món tráng miệng">Món tráng miệng</option>
+            <option value="Món nhậu">Món nhậu</option>
+        </select>
+    
+        <button type="submit">Lưu</button>
+        <button type="button" id="cancel-food-btn">Hủy</button>
+    </form>
+    
+    
+    <div id="data-container"></div>
+    <button onclick="goBack()">Quay lại</button>
+
+    <script>
+        let editingFoodId = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) throw new Error('Mạng lỗi hoặc lỗi server');
+                
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+                
+                // Xóa nội dung cũ trước khi thêm dữ liệu mới
+                container.innerHTML = '';
+                
+                let html = '';
+        
+                if (data.Food && Object.keys(data.Food).length > 0) {
+                    html += '<table><thead><tr><th>Food ID</th><th>Food Name</th><th>Price</th><th>Image</th><th>Description</th><th>Category</th><th>Actions</th></tr></thead><tbody>';
+        
+                    Object.keys(data.Food).forEach(foodId => {
+                        const food = data.Food[foodId];
+                        
+                        // Kiểm tra nếu food tồn tại và có dữ liệu
+                        if (food && food.foodName && food.price && food.description && food.category) {
+                            html += `<tr>
+                                <td>${foodId || 'N/A'}</td>
+                                <td>${food.foodName || 'N/A'}</td>
+                                <td>${food.price || 'N/A'}</td>
+                                <td><img src="${food.imageUrl || '#'}" alt="${food.foodName || 'N/A'}" style="max-width: 100px; max-height: 100px;"/></td>
+                                <td>${food.description || 'N/A'}</td>
+                                <td>${food.category || 'N/A'}</td>
+                                <td>
+                                    <button class="edit-food-btn" data-id="${foodId}">Sửa</button>
+                                    <button class="delete-food-btn" data-id="${foodId}">Xóa</button>
+                                </td>
+                            </tr>`;
+                        }
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html = '<p>Không có dữ liệu thức ăn</p>';
+                }
+        
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+        
+        
+
+        const showForm = (isEditing = false, foodId = null) => {
+            const form = document.getElementById('add-food-form');
+            const formTitle = document.getElementById('food-form-title');
+    
+            if (isEditing) {
+                formTitle.textContent = 'Sửa Thông Tin Món';
+                editingFoodId = foodId;
+            } else {
+                formTitle.textContent = 'Thêm Món Mới';
+                editingFoodId = null;
+                document.getElementById('food-name').value = '';
+                document.getElementById('food-price').value = '';
+                document.getElementById('food-image').value = '';
+                document.getElementById('food-description').value = '';
+                document.getElementById('food-category').value = '';
+            }
+    
+            form.style.display = 'block';
+        };
+
+        const hideForm = () => {
+            document.getElementById('add-food-form').style.display = 'none';
+            document.getElementById('add-food-form').reset();
+            editingFoodId = null;
+        };
+
+        document.getElementById('show-add-food-btn').addEventListener('click', () => {
+            showForm();
+        });
+
+        document.getElementById('cancel-food-btn').addEventListener('click', hideForm);
+
+        // Sự kiện click để sửa hoặc xóa món
+        document.getElementById('data-container').addEventListener('click', async (event) => {
+            const target = event.target;
+            
+            if (target.classList.contains('edit-food-btn')) {
+                const foodId = target.getAttribute('data-id');
+                try {
+                    const response = await fetch(`/api/view-database`);
+                    if (!response.ok) throw new Error('Không thể lấy dữ liệu món ăn');
+                    
+                    const data = await response.json();
+                    const food = data.Food[foodId];
+        
+                    // Hiển thị dữ liệu món ăn trên form
+                    if (food) {
+                        document.getElementById('food-name').value = food.foodName || '';
+                        document.getElementById('food-price').value = food.price || '';
+                        document.getElementById('food-description').value = food.description || '';
+                        document.getElementById('food-category').value = food.category || '';
+                        
+                        // Gán `editingFoodId` để biết món nào đang được sửa
+                        editingFoodId = foodId;
+                        
+                        // Hiển thị form
+                        showForm(true, foodId);
+                    } else {
+                        alert('Món ăn không tồn tại');
+                    }
+                } catch (error) {
+                    alert('Có lỗi xảy ra khi lấy dữ liệu: ' + error.message);
+                }
+            }
+            
+            if (target.classList.contains('delete-food-btn')) {
+                const foodId = target.getAttribute('data-id');
+                if (confirm(`Bạn có chắc chắn muốn xóa món ${foodId}?`)) {
+                    try {
+                        const response = await fetch(`/api/delete-food/${foodId}`, { method: 'DELETE' });
+                        if (!response.ok) throw new Error(`Lỗi khi xóa món: ${response.statusText}`);
+                        
+                        alert('Món đã được xóa thành công!');
+                        
+                        // Gọi lại fetchData để cập nhật danh sách sau khi xóa
+                        await fetchData();
+                    } catch (error) {
+                        alert('Có lỗi xảy ra: ' + error.message);
+                    }
+                }
+            }
+        });
+        
+        
+
+        document.getElementById('add-food-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+        
+            const foodName = document.getElementById('food-name').value;
+            const foodPrice = document.getElementById('food-price').value;
+            const foodImage = document.getElementById('food-image').files[0]; // Kiểm tra ảnh mới
+            const description = document.getElementById('food-description').value;
+            const category = document.getElementById('food-category').value;
+        
+            const formData = new FormData();
+            formData.append('foodName', foodName);
+            formData.append('price', foodPrice);
+            formData.append('description', description);
+            formData.append('category', category);
+        
+            // Chỉ thêm ảnh vào formData nếu người dùng chọn ảnh mới
+            if (foodImage) {
+                formData.append('image', foodImage);
+            }
+        
+            try {
+                let response;
+                if (editingFoodId) {
+                    response = await fetch(`/api/update-food/${editingFoodId}`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch('/api/add-food', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+                
+                if (!response.ok) throw new Error(editingFoodId ? 'Lỗi khi cập nhật món' : 'Lỗi khi thêm món');
+        
+                alert(editingFoodId ? 'Món đã được cập nhật thành công!' : 'Món đã được thêm thành công!');
+                fetchData();
+                hideForm();
+            } catch (error) {
+                alert('Có lỗi xảy ra: ' + error.message);
+            }
+        });
+        
+        
+
+        fetchData();
+    </script>
+</body>
+</html>

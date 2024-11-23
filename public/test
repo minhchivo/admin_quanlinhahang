@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Manager</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+<header>
+    <h1>Restaurant Manager</h1>
+</header>
+
+<div class="sidebar">
+    <a href="#" onclick="loadPage('trangchu.html')">Trang Chủ</a>
+    <a href="#" onclick="loadPage('quanlikhachhang.html')">Quản Lí Khách Hàng</a>
+    <a href="#" onclick="loadPage('quanlithucan.html')">Quản Lí Thức Ăn</a>
+    <a href="#" onclick="loadPage('quanlinuocuong.html')">Quản Lí Nước Uống</a>
+    <a href="#" onclick="loadPage('quanliban.html')">Quản Lí Bàn</a>
+    <a href="#" onclick="loadPage('quanlidonhang.html')">Quản Lí Hóa Đơn</a>
+    <a href="#" onclick="loadPage('quanlidatban.html')">Quản Lí Đặt Bàn</a>
+    <a href="#" onclick="loadPage('quanlidatabase.html')">Xem Dữ Liệu Cơ Sở Dữ Liệu</a>
+    <a href="#" onclick="loadAdminInfo()">Thông Tin</a> <!-- Thêm liên kết Thông Tin -->
+</div>
+
+<div class="content" id="content">
+    <p>Đang tải nội dung...</p>
+</div>
+
+<script>
+    function loadPage(page) {
+        const contentDiv = document.getElementById('content');
+        fetch(`html/${page}`)
+            .then(response => response.text())
+            .then(data => {
+                contentDiv.innerHTML = data; // Tải nội dung HTML
+                const scripts = contentDiv.getElementsByTagName('script'); // Lấy tất cả thẻ <script>
+                for (let i = 0; i < scripts.length; i++) {
+                    eval(scripts[i].innerHTML); // Thực thi mã JavaScript trong các thẻ <script>
+                }
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
+                contentDiv.innerHTML = '<p>Lỗi khi tải trang. Vui lòng thử lại sau.</p>';
+            });
+    }
+
+    // Hàm tải thông tin admin
+    function loadAdminInfo() {
+        const contentDiv = document.getElementById('content');
+        fetch('/admin-info')
+            .then(response => response.json())
+            .then(data => {
+                contentDiv.innerHTML = `
+                    <h2>Thông Tin Admin</h2>
+                    <p><strong>Tên:</strong> ${data.name}</p>
+                    <p><strong>Địa chỉ:</strong> ${data.address}</p>
+                    <p><strong>Số điện thoại:</strong> ${data.phone}</p>
+                    <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                    <p><strong>ID Admin:</strong> ${data.adminId}</p>
+                    <p><strong>Ngày tạo:</strong> ${data.created_at}</p>
+                    <p><strong>URL Hình ảnh:</strong> <img src="${data.image_url}" alt="Admin Image" style="width: 100px; height: auto;"></p>
+                    <p><strong>Mật khẩu:</strong> ${data.password}</p>
+                    <button onclick="logout()">Đăng Xuất</button>
+                `;
+            })
+            .catch(error => {
+                console.error('Error loading admin info:', error);
+                contentDiv.innerHTML = '<p>Lỗi khi tải thông tin. Vui lòng thử lại sau.</p>';
+            });
+    }
+    
+
+    // Hàm đăng xuất
+    function logout() {
+        fetch('/logout', { method: 'GET' })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Chuyển hướng về trang đăng nhập sau khi đăng xuất
+                } else {
+                    alert('Lỗi khi đăng xuất. Vui lòng thử lại.');
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+    }
+
+    // Load trang mặc định (trangchu.html) khi trang được tải
+    window.onload = function() {
+        loadPage('trangchu.html');
+    };
+</script>
+
+</body>
+</html>

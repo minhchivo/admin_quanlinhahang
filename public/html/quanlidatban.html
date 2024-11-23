@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lí Booking Tables</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <style>
+        #booking-form {
+            display: none; /* Form sẽ ẩn mặc định */
+        }
+    </style>
+</head>
+<body>
+    <h1>Quản Lí Booking Tables</h1>
+    <button id="show-add-form-btn">Thêm Booking Mới</button>
+    <form id="booking-form">
+        <h2 id="form-title">Thêm Booking Mới</h2>
+        <input type="text" id="user-id" placeholder="User ID" required />
+        <input type="text" id="table-id" placeholder="Table ID" required />
+        <input type="date" id="booking-date" required />
+        <input type="time" id="expired-time" required />
+        <button type="submit">Lưu</button>
+        <button type="button" id="cancel-btn">Hủy</button>
+    </form>
+    
+    <div id="data-container"></div>
+    <button onclick="goBack()">Quay lại</button>
+
+    <script>
+        let editingBookingId = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) {
+                    throw new Error('Mạng lỗi hoặc lỗi server');
+                }
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+
+                let html = '';
+
+                // Kiểm tra dữ liệu BookingTables
+                if (data.BookingTables && Object.keys(data.BookingTables).length > 0) {
+                    html += '<h2>Booking Tables</h2>';
+                    html += '<table id="booking-table"><thead><tr><th>Customer ID</th><th>Table ID</th><th>Booking Date</th><th>Expired Time</th><th>Thao Tác</th></tr></thead><tbody>';
+                    Object.keys(data.BookingTables).forEach(bookingId => {
+                        const booking = data.BookingTables[bookingId];
+                        html += `<tr data-booking-id="${bookingId}">
+                            <td>${booking && booking.userId ? booking.userId : 'N/A'}</td>
+                            <td>${booking && booking.tableID ? booking.tableID : 'N/A'}</td>
+                            <td>${booking && booking.bookingDate ? booking.bookingDate : 'N/A'}</td>
+                            <td>${booking && booking.expiredTime ? booking.expiredTime : 'N/A'}</td>
+                            <td>
+                                <button class="edit-btn" data-id="${bookingId}">Sửa</button>
+                                <button class="delete-btn" data-id="${bookingId}">Xóa</button>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+
+        // Hiển thị form thêm hoặc sửa
+        const showForm = (isEditing = false, bookingId = null) => {
+            const form = document.getElementById('booking-form');
+            const formTitle = document.getElementById('form-title');
+
+            if (isEditing) {
+                formTitle.textContent = 'Sửa Thông Tin Booking';
+                editingBookingId = bookingId;
+            } else {
+                formTitle.textContent = 'Thêm Booking Mới';
+                editingBookingId = null;
+                document.getElementById('user-id').value = '';
+                document.getElementById('table-id').value = '';
+                document.getElementById('booking-date').value = '';
+                document.getElementById('expired-time').value = '';
+            }
+
+            form.style.display = 'block';
+        };
+
+        // Ẩn form
+        const hideForm = () => {
+            document.getElementById('booking-form').style.display = 'none';
+            document.getElementById('booking-form').reset();
+            editingBookingId = null;
+        };
+
+        // Sự kiện click vào nút thêm booking
+        document.getElementById('show-add-form-btn').addEventListener('click', () => {
+            showForm();
+        });
+
+        // Sự kiện click vào nút hủy
+        document.getElementById('cancel-btn').addEventListener('click', hideForm);
+
+        // Event delegation cho nút sửa và xóa
+        document.getElementById('data-container').addEventListener('click', async (event) => {
+            const target = event.target;
+
+            if (target.classList.contains('delete-btn')) {
+                const bookingId = target.getAttribute('data-id');
+                if (confirm(`Bạn có chắc chắn muốn xóa booking ${bookingId}?`)) {
+                    try {
+                        const response = await fetch(`/api/delete-booking/${bookingId}`, {
+                            method: 'DELETE',
+                        });
+                        if (!response.ok) throw new Error(`Lỗi khi xóa booking: ${response.statusText}`);
+
+                        alert('Booking đã được xóa thành công!');
+                        fetchData(); // Làm mới danh sách booking
+                    } catch (error) {
+                        alert('Có lỗi xảy ra: ' + error.message);
+                    }
+                }
+            }
+
+            if (target.classList.contains('edit-btn')) {
+                const bookingId = target.getAttribute('data-id');
+                const row = document.querySelector(`tr[data-booking-id='${bookingId}']`);
+                const userId = row.cells[0].innerText;
+                const tableID = row.cells[1].innerText;
+                const bookingDate = row.cells[2].innerText;
+                const expiredTime = row.cells[3].innerText;
+
+                document.getElementById('user-id').value = userId;
+                document.getElementById('table-id').value = tableID;
+                document.getElementById('booking-date').value = bookingDate;
+                document.getElementById('expired-time').value = expiredTime;
+
+                showForm(true, bookingId);
+            }
+        });
+
+        // Hàm thêm hoặc sửa booking
+        document.getElementById('booking-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const userId = document.getElementById('user-id').value;
+            const tableID = document.getElementById('table-id').value;
+            const bookingDate = document.getElementById('booking-date').value;
+            const expiredTime = document.getElementById('expired-time').value;
+
+            if (editingBookingId) {
+                try {
+                    const response = await fetch(`/api/update-booking/${editingBookingId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId, tableID, bookingDate, expiredTime }),
+                    });
+                    if (!response.ok) throw new Error(`Lỗi khi cập nhật booking: ${response.statusText}`);
+
+                    alert('Booking đã được cập nhật thành công!');
+                    fetchData(); // Làm mới danh sách booking
+                    hideForm();
+                } catch (error) {
+                    alert('Có lỗi xảy ra: ' + error.message);
+                }
+            } else {
+                try {
+                    const response = await fetch('/api/add-booking', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ userId, tableID, bookingDate, expiredTime }),
+                    });
+                    if (!response.ok) throw new Error('Lỗi khi thêm booking');
+
+                    alert('Booking đã được thêm thành công!');
+                    fetchData(); // Làm mới danh sách booking
+                    hideForm();
+                } catch (error) {
+                    alert('Có lỗi xảy ra: ' + error.message);
+                }
+            }
+        });
+
+        function goBack() {
+            window.location.href = 'trangchu.html'; // Thay đổi về trang bạn muốn quay lại
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>

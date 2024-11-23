@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Nước Uống</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <style>
+        #add-drink-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quản lý Nước Uống</h1>
+    <button id="show-add-drink-btn">Thêm Nước Uống Mới</button>
+    <form id="add-drink-form" enctype="multipart/form-data">
+        <h2 id="drink-form-title">Thêm Nước Uống Mới</h2>
+        <input type="text" id="drink-name" placeholder="Tên nước uống" required />
+        <input type="number" id="drink-price" placeholder="Giá" required />
+        <input type="file" id="drink-image" accept="image/*" />
+        <textarea id="drink-description" placeholder="Mô tả" required></textarea>
+        <select id="drink-isAvailable" required>
+            <option value="true">Có sẵn</option>
+            <option value="false">Không có sẵn</option>
+        </select>
+        <button type="submit">Lưu</button>
+        <button type="button" id="cancel-drink-btn">Hủy</button>
+    </form>
+    
+    <div id="data-container"></div>
+    <button onclick="goBack()">Quay lại</button>
+
+    <script>
+        let editingDrinkId = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) throw new Error('Mạng lỗi hoặc lỗi server');
+                
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+                container.innerHTML = '';
+                
+                let html = '';
+
+                if (data.FoodDrinks && Object.keys(data.FoodDrinks).length > 0) {
+                    html += '<table><thead><tr><th>ID</th><th>Tên</th><th>Giá</th><th>Hình ảnh</th><th>Mô tả</th><th>Trạng thái</th><th>Hành động</th></tr></thead><tbody>';
+                    Object.keys(data.FoodDrinks).forEach(drinkId => {
+                        const drink = data.FoodDrinks[drinkId];
+                        if (drink && drink.name) {
+                            html += `<tr>
+                                <td>${drinkId}</td>
+                                <td>${drink.name}</td>
+                                <td>${drink.price}</td>
+                                <td><img src="${drink.imageUrl || '#'}" alt="${drink.name}" style="max-width: 100px; max-height: 100px;"/></td>
+                                <td>${drink.description || ''}</td>
+                                <td>${drink.isAvailable ? 'Có sẵn' : 'Không có sẵn'}</td>
+                                <td>
+                                    <button class="edit-drink-btn" data-id="${drinkId}">Sửa</button>
+                                    <button class="delete-drink-btn" data-id="${drinkId}">Xóa</button>
+                                </td>
+                            </tr>`;
+                        }
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html = '<p>Không có dữ liệu nước uống</p>';
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+
+        const showForm = (isEditing = false, drinkId = null) => {
+            const form = document.getElementById('add-drink-form');
+            const formTitle = document.getElementById('drink-form-title');
+
+            if (isEditing) {
+                formTitle.textContent = 'Sửa Thông Tin Nước Uống';
+                editingDrinkId = drinkId;
+            } else {
+                formTitle.textContent = 'Thêm Nước Uống Mới';
+                editingDrinkId = null;
+                document.getElementById('add-drink-form').reset();
+            }
+
+            form.style.display = 'block';
+        };
+
+        const hideForm = () => {
+            document.getElementById('add-drink-form').style.display = 'none';
+            editingDrinkId = null;
+        };
+
+        document.getElementById('show-add-drink-btn').addEventListener('click', () => {
+            showForm();
+        });
+
+        document.getElementById('cancel-drink-btn').addEventListener('click', hideForm);
+
+        document.getElementById('add-drink-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const drinkName = document.getElementById('drink-name').value;
+            const drinkPrice = document.getElementById('drink-price').value;
+            const drinkImage = document.getElementById('drink-image').files[0];
+            const description = document.getElementById('drink-description').value;
+            const isAvailable = document.getElementById('drink-isAvailable').value === 'true';
+
+            const formData = new FormData();
+            formData.append('name', drinkName);
+            formData.append('price', drinkPrice);
+            formData.append('description', description);
+            formData.append('isAvailable', isAvailable);
+
+            if (drinkImage) {
+                formData.append('image', drinkImage);
+            }
+
+            try {
+                let response;
+                if (editingDrinkId) {
+                    response = await fetch(`/api/update-drink/${editingDrinkId}`, {
+                        method: 'PUT',
+                        body: formData
+                    });
+                } else {
+                    response = await fetch('/api/add-drink', {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+
+                if (!response.ok) throw new Error(editingDrinkId ? 'Lỗi khi cập nhật nước uống' : 'Lỗi khi thêm nước uống');
+
+                alert(editingDrinkId ? 'Nước uống đã được cập nhật thành công!' : 'Nước uống đã được thêm thành công!');
+                fetchData();
+                hideForm();
+            } catch (error) {
+                alert('Có lỗi xảy ra: ' + error.message);
+            }
+        });
+
+        document.getElementById('data-container').addEventListener('click', async (event) => {
+            const target = event.target;
+
+            if (target.classList.contains('edit-drink-btn')) {
+                const drinkId = target.getAttribute('data-id');
+                const response = await fetch('/api/view-database');
+                if (!response.ok) return alert('Không thể lấy dữ liệu nước uống');
+
+                const data = await response.json();
+                const drink = data.FoodDrinks[drinkId];
+
+                if (drink) {
+                    document.getElementById('drink-name').value = drink.name;
+                    document.getElementById('drink-price').value = drink.price;
+                    document.getElementById('drink-description').value = drink.description;
+                    document.getElementById('drink-isAvailable').value = drink.isAvailable ? 'true' : 'false';
+                    showForm(true, drinkId);
+                }
+            }
+
+            if (target.classList.contains('delete-drink-btn')) {
+                const drinkId = target.getAttribute('data-id');
+                if (confirm(`Bạn có chắc chắn muốn xóa nước uống ${drinkId}?`)) {
+                    try {
+                        const response = await fetch(`/api/delete-drink/${drinkId}`, { method: 'DELETE' });
+                        if (!response.ok) throw new Error('Lỗi khi xóa nước uống');
+                        alert('Nước uống đã được xóa thành công!');
+                        fetchData();
+                    } catch (error) {
+                        alert('Có lỗi xảy ra: ' + error.message);
+                    }
+                }
+            }
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xem Cơ Sở Dữ Liệu</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+</head>
+<body>
+    <h1>Cơ Sở Dữ Liệu</h1>
+    <div id="data-container"></div>
+    <button onclick="goBack()">Quay lại</button>
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) {
+                    throw new Error('Mạng lỗi hoặc lỗi server');
+                }
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+    
+                let html = '';
+
+                // Kiểm tra dữ liệu Users
+                if (data.Users && Object.keys(data.Users).length > 0) {
+                    html += '<h2>Users</h2>';
+                    html += '<table><thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>PassWord</th><th>Phone</th><th>Address</th><th>Reservations</th><th>Image URL</th><th>Ngày Tạo</th></tr></thead><tbody>';
+                    Object.keys(data.Users).forEach(userId => {
+                        const user = data.Users[userId];
+                        html += `<tr>
+                            <td>${userId || 'N/A'}</td>
+                            <td>${user && user.name ? user.name : 'N/A'}</td>
+                            <td>${user && user.email ? user.email : 'N/A'}</td>
+                            <td>${user && user.password ? user.password : 'N/A'}</td>
+                            <td>${user && user.phone ? user.phone : 'N/A'}</td>
+                            <td>${user && user.address ? user.address : 'N/A'}</td>
+                            <td>${user && user.reservations ? user.reservations : 'N/A'}</td>
+                            <td><img src="${user && user.image_url ? user.image_url : 'N/A'}" alt="${user && user.name ? user.name : 'N/A'}"/></td>
+                            <td>${user && user.created_at ? user.created_at : 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+                // Kiểm tra dữ liệu Admins
+                if (data.Admins && Object.keys(data.Admins).length > 0) {
+                    html += '<h2>Admins</h2>';
+                    html += '<table><thead><tr><th>Admin ID</th><th>Name</th><th>Address</th><th>Phone</th><th>Password</th><th>Ngày Tạo</th><th>Image URL</th></tr></thead><tbody>';
+                    Object.keys(data.Admins).forEach(adminId => {
+                        const admin = data.Admins[adminId];
+                        html += `<tr>
+                            <td>${adminId || 'N/A'}</td>
+                            <td>${admin && admin.name ? admin.name : 'N/A'}</td>
+                            <td>${admin && admin.address ? admin.address : 'N/A'}</td>
+                            <td>${admin && admin.phone ? admin.phone : 'N/A'}</td>
+                            <td>${admin && admin.password ? admin.password : 'N/A'}</td>
+                            <td>${admin && admin.created_at ? admin.created_at : 'N/A'}</td>
+                            <td><img src="${admin && admin.image_url ? admin.image_url : 'N/A'}" alt="${admin && admin.name ? admin.name : 'N/A'}"/></td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+                // Kiểm tra dữ liệu Food
+                if (data.Food && Object.keys(data.Food).length > 0) {
+                    html += '<h2>Food</h2>';
+                    html += '<table><thead><tr><th>Food ID</th><th>Food Name</th><th>Price</th><th>Image URL</th><th>Description</th></tr></thead><tbody>';
+                    Object.keys(data.Food).forEach(foodId => {
+                        const food = data.Food[foodId];
+                        html += `<tr>
+                            <td>${foodId || 'N/A'}</td>
+                            <td>${food && food.foodName ? food.foodName : 'N/A'}</td>
+                            <td>${food && food.price ? food.price : 'N/A'}</td>
+                            <td><img src="${food && food.imageURL ? food.imageURL : 'N/A'}" alt="${food && food.foodName ? food.foodName : 'N/A'}"/></td>
+                            <td>${food && food.description ? food.description : 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+                // Kiểm tra dữ liệu BookingTables
+                if (data.BookingTables && Object.keys(data.BookingTables).length > 0) {
+                    html += '<h2>Booking Tables</h2>';
+                    html += '<table><thead><tr><th>Customer ID</th><th>Table ID</th><th>Booking Date</th><th>Expired Time</th></tr></thead><tbody>';
+                    Object.keys(data.BookingTables).forEach(bookingId => {
+                        const booking = data.BookingTables[bookingId];
+                        html += `<tr>
+                            <td>${booking && booking.customerID ? booking.customerID : 'N/A'}</td>
+                            <td>${booking && booking.tableID ? booking.tableID : 'N/A'}</td>
+                            <td>${booking && booking.bookingDate ? booking.bookingDate : 'N/A'}</td>
+                            <td>${booking && booking.expiredTime ? booking.expiredTime : 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+
+                // Kiểm tra dữ liệu Tables
+                if (data.Tables && Object.keys(data.Tables).length > 0) {
+                    html += '<h2>Tables</h2>';
+                    html += '<table><thead><tr><th>Table ID</th><th>Seats</th><th>Status</th></tr></thead><tbody>';
+                    Object.keys(data.Tables).forEach(tableId => {
+                        const table = data.Tables[tableId];
+                        html += `<tr>
+                            <td>${tableId || 'N/A'}</td>
+                            <td>${table && table.seats ? table.seats : 'N/A'}</td>
+                            <td>${table && table.status ? table.status : 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+               // Kiểm tra dữ liệu Orders
+if (data.Orders && Object.keys(data.Orders).length > 0) {
+    html += '<h2>Orders</h2>';
+    html += '<table><thead><tr><th>Order ID</th><th>Ngày</th><th>Thanh Toán</th><th>Tổng cộng</th><th>Customer ID</th><th>Mã bàn</th><th>Mã nhân viên</th><th>Status</th><th>Food Drink ID</th><th>Quantity</th><th>Unit Price</th><th>Discount</th><th>Tax</th><th>Description</th></tr></thead><tbody>';
+    Object.keys(data.Orders).forEach(orderId => {
+        const order = data.Orders[orderId];
+        html += `<tr>
+            <td>${orderId || 'N/A'}</td>
+            <td>${order && order.orderDate ? order.orderDate : 'N/A'}</td>
+            <td>${order && order.isPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
+            <td>${order && order.total ? order.total : 'N/A'}</td>
+            <td>${order && order.customerID ? order.customerID : 'N/A'}</td>
+            <td>${order && order.tableID ? order.tableID : 'N/A'}</td>
+            <td>${order && order.employeeID ? order.employeeID : 'N/A'}</td>
+            <td>${order && order.status ? order.status : 'N/A'}</td>
+            <td>${order && order.foodDrinkID ? order.foodDrinkID : 'N/A'}</td>
+            <td>${order && order.quantity ? order.quantity : 'N/A'}</td>
+            <td>${order && order.unitPrice ? order.unitPrice : 'N/A'}</td>
+            <td>${order && order.discount ? order.discount : 'N/A'}</td>
+            <td>${order && order.tax ? order.tax : 'N/A'}</td>
+            <td>${order && order.description ? order.description : 'N/A'}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+}
+
+                if (data.FoodDrinks && Object.keys(data.FoodDrinks).length > 0) {
+                    html += '<h2>FoodDrinks</h2>';
+                    html += '<table><thead><tr><th>FoodDrink ID</th><th>Name</th><th>Price</th><th>Image URL</th><th>Description</th><th>Is Available</th></tr></thead><tbody>';
+                    Object.keys(data.FoodDrinks).forEach(foodDrinkId => {
+                        const foodDrink = data.FoodDrinks[foodDrinkId];
+                        html += `<tr>
+                            <td>${foodDrinkId || 'N/A'}</td>
+                            <td>${foodDrink && foodDrink.name ? foodDrink.name : 'N/A'}</td>
+                            <td>${foodDrink && foodDrink.price ? foodDrink.price : 'N/A'}</td>
+                            <td><img src="${foodDrink && foodDrink.imageURL ? foodDrink.imageURL : 'N/A'}" alt="${foodDrink && foodDrink.name ? foodDrink.name : 'N/A'}"/></td>
+                            <td>${foodDrink && foodDrink.description ? foodDrink.description : 'N/A'}</td>
+                            <td>${foodDrink && foodDrink.isAvailable !== undefined ? (foodDrink.isAvailable ? 'Yes' : 'No') : 'N/A'}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+
+                
+                
+
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+
+        function goBack() {
+            loadPage('trangchu.html'); // Hoặc bất kỳ trang nào bạn muốn quay lại
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>

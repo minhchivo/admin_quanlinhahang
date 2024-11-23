@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhà Hàng</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+
+<header>
+    <h1 class="header-title">Quản Lý Nhà Hàng</h1>
+    <div class="profile">
+    <h5>Thông Tin</h5>
+        <div class="dropdown-content">
+            <a href="#" onclick="loadAdminInfo()">Thông Tin</a>
+            <a href="#" onclick="logout()">Đăng Xuất</a>
+        </div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="sidebar">
+        <a href="#" onclick="loadPage('trangchu.html')"><i class="fas fa-home"></i> Trang Chủ</a>
+        <a href="#" onclick="loadPage('quanlikhachhang.html')"><i class="fas fa-users"></i> Quản Lí Khách Hàng</a>
+        <a href="#" onclick="loadPage('quanlithucan.html')"><i class="fas fa-utensils"></i> Quản Lí Thức Ăn</a>
+        <a href="#" onclick="loadPage('quanlinuocuong.html')"><i class="fas fa-coffee"></i> Quản Lí Nước Uống</a>
+        <a href="#" onclick="loadPage('quanliban.html')"><i class="fas fa-chair"></i> Quản Lí Bàn</a>
+        <a href="#" onclick="loadPage('quanlidonhang.html')"><i class="fas fa-receipt"></i> Quản Lí Hóa Đơn</a>
+        <a href="#" onclick="loadPage('quanlidatban.html')"><i class="fas fa-calendar-check"></i> Quản Lí Đặt Bàn</a>
+    </div>
+
+    <div class="content" id="content">
+        <p>Chào mừng bạn đến với Restaurant Manager</p>
+        <p>Chọn một mục từ menu bên trái để bắt đầu quản lý.</p>
+    </div>
+    <!-- Modal Structure -->
+<div class="modal" id="adminModal">
+    <div class="modal-content" id="adminInfoContent">
+    </div>
+</div>
+
+</div>
+
+<script>
+    function loadPage(page) {
+        console.log("Loading page:", page);
+        const contentDiv = document.getElementById('content');
+        fetch(`html/${page}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Network response was not ok.");
+                return response.text();
+            })
+            .then(data => {
+                contentDiv.innerHTML = data;
+                const scripts = contentDiv.getElementsByTagName('script');
+                for (let i = 0; i < scripts.length; i++) {
+                    eval(scripts[i].innerHTML);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
+                contentDiv.innerHTML = '<p>Lỗi khi tải trang. Vui lòng thử lại sau.</p>';
+            });
+    }
+    
+
+    function loadAdminInfo() {
+        const modal = document.getElementById('adminModal');
+        const adminInfoContent = document.getElementById('adminInfoContent');
+    
+        // Hiển thị modal
+        modal.style.display = "flex"; 
+    
+        // Nạp nội dung từ `thongtinadmin.html`
+        fetch('html/thongtinadmin.html')
+            .then(response => response.text())
+            .then(data => {
+                adminInfoContent.innerHTML = data;
+    
+                // Sau khi nạp nội dung, lấy dữ liệu admin từ API
+                fetch('/admin-info')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('name').innerText = data.name;
+                        document.getElementById('address').innerText = data.address;
+                        document.getElementById('phone').innerText = data.phone;
+                        document.getElementById('email').innerText = data.email || 'N/A';
+                        document.getElementById('adminId').innerText = data.adminId;
+                        document.getElementById('created_at').innerText = data.created_at;
+                    })
+                    .catch(error => {
+                        console.error('Error loading admin info:', error);
+                        adminInfoContent.innerHTML = '<p>Lỗi khi tải thông tin. Vui lòng thử lại sau.</p>';
+                    });
+            })
+            .catch(error => {
+                console.error('Error loading admin content:', error);
+                adminInfoContent.innerHTML = '<p>Lỗi khi tải nội dung. Vui lòng thử lại sau.</p>';
+            });
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById('adminModal');
+        modal.style.display = "none";
+    }
+    
+    // Đóng modal khi nhấn bên ngoài modal
+    window.onclick = function(event) {
+        const modal = document.getElementById('adminModal');
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    }
+    
+
+    function logout() {
+        fetch('/logout', { method: 'GET' })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/';
+                } else {
+                    alert('Lỗi khi đăng xuất. Vui lòng thử lại.');
+                }
+            })
+            .catch(error => {
+                console.error('Error logging out:', error);
+            });
+    }
+
+    window.onload = function() {
+        loadPage('trangchu.html');
+    };
+</script>
+
+</body>
+</html>

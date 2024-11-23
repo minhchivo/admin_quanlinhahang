@@ -1,0 +1,101 @@
+        /* Basic styling adjustments */
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            background-color: #34495e;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-title {
+            margin: 0;
+            font-size: 24px;
+        }
+        .profile {
+            position: relative;
+            display: inline-block;
+        }
+        .profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .profile:hover .dropdown-content {
+            display: block;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            margin-top: 80px; /* Add margin to prevent overlap with header */
+        }
+        .sidebar {
+            width: 240px;
+            background-color: #2c3e50;
+            padding-top: 20px;
+            min-height: calc(100vh - 80px);
+            position: fixed;
+            top: 80px; /* Position below the header */
+            bottom: 0;
+            left: 0;
+        }
+        
+        .sidebar a {
+            padding: 15px 20px;
+            text-decoration: none;
+            color: white;
+            display: block;
+            font-size: 16px;
+        }
+        .sidebar a:hover {
+            background-color: #1abc9c;
+        }
+        .content {
+            margin-left: 250px; /* Same as sidebar width */
+            padding: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                top: 0;
+                left: 0;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }

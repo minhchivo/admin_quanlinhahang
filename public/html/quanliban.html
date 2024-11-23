@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lí Bàn</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <style>
+        #add-table-form {
+            display: none; /* Form sẽ ẩn mặc định */
+        }
+    </style>
+</head>
+<body>
+    <h1>Quản Lí Bàn</h1>
+    <button id="show-add-form-btn">Thêm Bàn Mới</button>
+    <form id="add-table-form">
+        <h2 id="form-title">Thêm Bàn Mới</h2>
+        <input type="text" id="table-name" placeholder="Tên Bàn" required />
+        <select id="table-status" required>
+            <option value="1">Có sẵn</option>
+            <option value="0">Đã đặt</option>
+        </select>
+        <button type="submit">Lưu</button>
+        <button type="button" id="cancel-btn">Hủy</button>
+    </form>
+    
+    <div id="data-container"></div>
+
+    <script>
+        let currentID = 0;
+        let editingTableId = null;
+    
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) {
+                    throw new Error('Mạng lỗi hoặc lỗi server');
+                }
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+    
+                let html = '';
+    
+                // Kiểm tra dữ liệu Tables
+                if (data.Tables && Object.keys(data.Tables).length > 0) {
+                    // Đảm bảo rằng currentID được khởi tạo đúng cách từ ID lớn nhất hiện có
+                    const tableIds = Object.keys(data.Tables).map(id => parseInt(id)).filter(id => !isNaN(id));
+                    currentID = tableIds.length > 0 ? Math.max(...tableIds) : 100; // Bắt đầu từ 100 nếu không có bàn nào
+    
+                    html += '<table id="table-list"><thead><tr><th>Table ID</th><th>Tên Bàn</th><th>Trạng Thái</th><th>Thao Tác</th></tr></thead><tbody>';
+                    Object.keys(data.Tables).forEach(tableId => {
+                        const table = data.Tables[tableId];
+                        html += `<tr data-table-id="${tableId}">
+                            <td>${tableId || 'N/A'}</td>
+                            <td>${table.tableName || 'N/A'}</td>
+                            <td>${table.status === '1' ? 'Có sẵn' : 'Đã đặt'}</td>
+                            <td>
+                                <button class="edit-btn" data-id="${tableId}">Sửa</button>
+                                <button class="delete-btn" data-id="${tableId}">Xóa</button>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                }
+    
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+    
+        // Hiển thị form thêm hoặc sửa
+        const showForm = (isEditing = false, tableId = null) => {
+            const form = document.getElementById('add-table-form');
+            const formTitle = document.getElementById('form-title');
+    
+            if (isEditing) {
+                formTitle.textContent = 'Sửa Thông Tin Bàn';
+                editingTableId = tableId;
+            } else {
+                formTitle.textContent = 'Thêm Bàn Mới';
+                editingTableId = null;
+                document.getElementById('table-name').value = '';
+                document.getElementById('table-status').value = '1';
+            }
+    
+            form.style.display = 'block';
+        };
+    
+        // Ẩn form
+        const hideForm = () => {
+            document.getElementById('add-table-form').style.display = 'none';
+            document.getElementById('add-table-form').reset();
+            editingTableId = null;
+        };
+    
+        // Sự kiện click vào nút thêm bàn
+        document.getElementById('show-add-form-btn').addEventListener('click', () => {
+            showForm();
+        });
+    
+        // Sự kiện click vào nút hủy
+        document.getElementById('cancel-btn').addEventListener('click', hideForm);
+    
+        // Event delegation cho nút sửa và xóa
+        document.getElementById('data-container').addEventListener('click', async (event) => {
+            const target = event.target;
+    
+            if (target.classList.contains('delete-btn')) {
+                const tableId = target.getAttribute('data-id');
+                if (confirm(`Bạn có chắc chắn muốn xóa bàn ${tableId}?`)) {
+                    try {
+                        const response = await fetch(`/api/delete-table/${tableId}`, {
+                            method: 'DELETE',
+                        });
+                        if (!response.ok) throw new Error(`Lỗi khi xóa bàn: ${response.statusText}`);
+    
+                        alert('Bàn đã được xóa thành công!');
+                        fetchData(); // Làm mới danh sách bàn
+                    } catch (error) {
+                        alert('Có lỗi xảy ra: ' + error.message);
+                    }
+                }
+            }
+    
+            if (target.classList.contains('edit-btn')) {
+                const tableId = target.getAttribute('data-id');
+                const row = document.querySelector(`tr[data-table-id='${tableId}']`);
+                const tableName = row.cells[1].innerText;
+                const status = row.cells[2].innerText === 'Có sẵn' ? '1' : '0';
+    
+                document.getElementById('table-name').value = tableName;
+                document.getElementById('table-status').value = status;
+    
+                showForm(true, tableId);
+            }
+        });
+    
+        // Hàm thêm hoặc sửa bàn
+        document.getElementById('add-table-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const tableName = document.getElementById('table-name').value;
+            const status = document.getElementById('table-status').value;
+    
+            if (editingTableId) {
+                try {
+                    const response = await fetch(`/api/update-table/${editingTableId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ tableName, status }),
+                    });
+                    if (!response.ok) throw new Error(`Lỗi khi cập nhật bàn: ${response.statusText}`);
+    
+                    alert('Bàn đã được cập nhật thành công!');
+                    fetchData(); // Làm mới danh sách bàn
+                    hideForm();
+                } catch (error) {
+                    alert('Có lỗi xảy ra: ' + error.message);
+                }
+            } else {
+                try {
+                    currentID += 1; // Tăng ID tự động
+                    const response = await fetch('/api/add-table', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ tableId: currentID.toString(), tableName, status }),
+                    });
+                    if (!response.ok) throw new Error('Lỗi khi thêm bàn');
+    
+                    alert('Bàn đã được thêm thành công!');
+                    fetchData(); // Làm mới danh sách bàn
+                    hideForm();
+                } catch (error) {
+                    alert('Có lỗi xảy ra: ' + error.message);
+                }
+            }
+        });
+    
+        fetchData(); // Lấy dữ liệu khi trang tải
+    </script>
+    
+        
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lí khách hàng</title>
+    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <style>
+        #add-user-form {
+            display: none; /* Form sẽ ẩn mặc định */
+        }
+    </style>
+</head>
+<body>
+    <h1>Quản lí khách hàng</h1>
+    <button id="show-add-user-btn">Thêm Khách Hàng Mới</button>
+    <form id="add-user-form">
+        <h2 id="user-form-title">Thêm Khách Hàng Mới</h2>
+        <input type="text" id="user-name" placeholder="Tên" required />
+        <input type="email" id="user-email" placeholder="Email" required />
+        <input type="text" id="user-phone" placeholder="Số điện thoại" required />
+        <input type="text" id="user-address" placeholder="Địa chỉ" required />
+        <button type="submit">Lưu</button>
+        <button type="button" id="cancel-user-btn">Hủy</button>
+    </form>
+
+    <div id="data-container"></div>
+
+    <script>
+        let editingUserId = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/view-database');
+                if (!response.ok) throw new Error('Mạng lỗi hoặc lỗi server');
+
+                const data = await response.json();
+                const container = document.getElementById('data-container');
+                let html = '';
+
+                if (data.Users && Object.keys(data.Users).length > 0) {
+                    html += '<h2>Users</h2>';
+                    html += '<table><thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Ngày Tạo</th><th>Actions</th></tr></thead><tbody>';
+                    Object.keys(data.Users).forEach(userId => {
+                        const user = data.Users[userId];
+                        html += `<tr>
+                            <td>${userId || 'N/A'}</td>
+                            <td>${user && user.name ? user.name : 'N/A'}</td>
+                            <td>${user && user.email ? user.email : 'N/A'}</td>
+                            <td>${user && user.phone ? user.phone : 'N/A'}</td>
+                            <td>${user && user.address ? user.address : 'N/A'}</td>
+                            <td>${user && user.created_at ? user.created_at : 'N/A'}</td>
+                            <td>
+                                <button class="edit-user-btn" data-id="${userId}">Sửa</button>
+                                <button class="delete-user-btn" data-id="${userId}">Xóa</button>
+                            </td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                } else {
+                    html = '<p>Không có dữ liệu khách hàng</p>';
+                }
+
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+            }
+        }
+
+        function showForm(isEditing = false, userId = null) {
+            const form = document.getElementById('add-user-form');
+            const formTitle = document.getElementById('user-form-title');
+
+            if (isEditing) {
+                formTitle.textContent = 'Sửa Thông Tin Khách Hàng';
+                editingUserId = userId;
+            } else {
+                formTitle.textContent = 'Thêm Khách Hàng Mới';
+                editingUserId = null;
+                document.getElementById('user-name').value = '';
+                document.getElementById('user-email').value = '';
+                document.getElementById('user-phone').value = '';
+                document.getElementById('user-address').value = '';
+            }
+
+            form.style.display = 'block';
+        }
+
+        function hideForm() {
+            document.getElementById('add-user-form').style.display = 'none';
+            editingUserId = null;
+        }
+
+        document.getElementById('show-add-user-btn').addEventListener('click', () => {
+            showForm();
+        });
+
+        document.getElementById('cancel-user-btn').addEventListener('click', hideForm);
+
+        document.getElementById('add-user-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const phone = document.getElementById('user-phone').value;
+            const address = document.getElementById('user-address').value;
+
+            const userData = { name, email, phone, address };
+
+            try {
+                let response;
+                if (editingUserId) {
+                    response = await fetch(`/api/update-user/${editingUserId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+                } else {
+                    response = await fetch('/api/add-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    });
+                }
+
+                if (!response.ok) throw new Error(editingUserId ? 'Lỗi khi cập nhật khách hàng' : 'Lỗi khi thêm khách hàng');
+
+                alert(editingUserId ? 'Khách hàng đã được cập nhật thành công!' : 'Khách hàng đã được thêm thành công!');
+                fetchData();
+                hideForm();
+            } catch (error) {
+                alert('Có lỗi xảy ra: ' + error.message);
+            }
+        });
+
+        document.getElementById('data-container').addEventListener('click', async (event) => {
+            const target = event.target;
+
+            if (target.classList.contains('edit-user-btn')) {
+                const userId = target.getAttribute('data-id');
+                try {
+                    const response = await fetch(`/api/view-database`);
+                    if (!response.ok) throw new Error('Không thể lấy dữ liệu khách hàng');
+
+                    const data = await response.json();
+                    const user = data.Users[userId];
+
+                    if (user) {
+                        document.getElementById('user-name').value = user.name || '';
+                        document.getElementById('user-email').value = user.email || '';
+                        document.getElementById('user-phone').value = user.phone || '';
+                        document.getElementById('user-address').value = user.address || '';
+
+                        showForm(true, userId);
+                    } else {
+                        alert('Khách hàng không tồn tại');
+                    }
+                } catch (error) {
+                    alert('Có lỗi xảy ra khi lấy dữ liệu: ' + error.message);
+                }
+            }
+
+            if (target.classList.contains('delete-user-btn')) {
+                const userId = target.getAttribute('data-id');
+                if (confirm(`Bạn có chắc chắn muốn xóa khách hàng ${userId}?`)) {
+                    try {
+                        const response = await fetch(`/api/delete-user/${userId}`, { method: 'DELETE' });
+                        if (!response.ok) throw new Error(`Lỗi khi xóa khách hàng: ${response.statusText}`);
+
+                        alert('Khách hàng đã được xóa thành công!');
+                        fetchData();
+                    } catch (error) {
+                        alert('Có lỗi xảy ra: ' + error.message);
+                    }
+                }
+            }
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>
