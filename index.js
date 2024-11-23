@@ -20,9 +20,10 @@ const db = admin.database(); // Sử dụng Realtime Database
 const app = express();
 const router = express.Router()
 app.use(cors({
-  origin: 'https://minhchivo.github.io/user_nhahang/', // Domain thực của frontend
-  credentials: true // Cho phép gửi kèm cookie
+  origin: 'https://minhchivo.github.io',
+  credentials: true
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Đọc dữ liệu từ form HTML
