@@ -1035,7 +1035,29 @@ app.delete('/api/delete-booking/:bookingId', async (req, res) => {
 });
 
 
+app.post('/api/send-message', async (req, res) => {
+  const { adminId, userId, text } = req.body;
 
+  if (!adminId || !userId || !text) {
+      return res.status(400).json({ error: 'Thiếu dữ liệu bắt buộc.' });
+  }
+
+  try {
+      const userMessagesRef = db.ref(`Messages/${userId}/messages`);
+      const timestamp = new Date().toISOString();
+      await userMessagesRef.push({
+          sender: `admin_${adminId}`,
+          text,
+          timestamp,
+      });
+
+      console.log(`[INFO] Admin (${adminId}) đã gửi: ${text}`);
+      res.json({ message: 'Phản hồi đã được gửi thành công.' });
+  } catch (error) {
+      console.error('[ERROR] Lỗi khi gửi phản hồi:', error);
+      res.status(500).json({ error: 'Lỗi server khi gửi phản hồi.' });
+  }
+});
 
 
 
