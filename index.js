@@ -2,7 +2,7 @@ const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
 const session = require('express-session');
-const serviceAccount = require('./serviceAccountKey.json');
+const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
@@ -20,9 +20,10 @@ const db = admin.database(); // Sử dụng Realtime Database
 const app = express();
 const router = express.Router()
 app.use(cors({
-  origin: 'http://localhost:3000', // Domain frontend
+  origin: 'https://minhchivo.github.io/quanlynhahnag/', // Domain thực của frontend
   credentials: true // Cho phép gửi kèm cookie
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Đọc dữ liệu từ form HTML
 
@@ -741,7 +742,7 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-const BASE_URL = 'http://localhost:8080'; // URL backend
+const BASE_URL = 'https://admin-quanlinhahang.onrender.com'; // URL backend
 
 const nodemailer = require('nodemailer');
 
