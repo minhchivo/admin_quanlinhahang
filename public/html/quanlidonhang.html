@@ -10,15 +10,15 @@
     <h1>Quản Lý Hóa Đơn</h1>
     <div id="data-container"></div>
 
-    <!-- Đặt thẻ script ở cuối body để đảm bảo các hàm được định nghĩa sau khi HTML được tải -->
     <script>
         // Hàm lấy dữ liệu hóa đơn
         async function fetchData() {
             try {
                 const response = await fetch('/api/view-database');
                 if (!response.ok) {
-                    throw new Error('Mạng lỗi hoặc lỗi server');
+                    throw new Error(`Lỗi mạng: ${response.statusText}`);
                 }
+
                 const data = await response.json();
                 const container = document.getElementById('data-container');
 
@@ -66,46 +66,54 @@
 
                 container.innerHTML = html;
             } catch (error) {
-                document.getElementById('data-container').innerText = 'Lỗi khi lấy dữ liệu: ' + error.message;
+                alert('Lỗi khi lấy dữ liệu: ' + error.message);
             }
         }
 
-        // Hàm xóa hóa đơn
-        async function deleteInvoice(invoiceId) {
-            try {
-                const response = await fetch(`/api/delete-invoice/${invoiceId}`, { method: 'DELETE' });
-                if (!response.ok) {
-                    throw new Error('Không thể xóa hóa đơn');
-                }
-                alert('Hóa đơn đã được xóa thành công');
-                fetchData(); // Tải lại dữ liệu sau khi xóa
-            } catch (error) {
-                alert('Lỗi khi xóa hóa đơn: ' + error.message);
-            }
+        // Gắn các hàm vào đối tượng `window` để đảm bảo chúng nằm trong phạm vi toàn cục
+window.deleteInvoice = async function(invoiceId) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa hóa đơn ${invoiceId}?`)) return;
+
+    try {
+        const response = await fetch(`/api/delete-invoice/${invoiceId}`, { method: 'DELETE' });
+        if (!response.ok) {
+            throw new Error(`Lỗi xóa: ${response.statusText}`);
         }
 
-        // Hàm cập nhật trạng thái của hóa đơn
-        async function updateStatus(invoiceId) {
-            const newStatus = prompt("Nhập trạng thái mới cho hóa đơn (Ví dụ: Đã thanh toán, Chưa thanh toán, Đang xử lý):");
-            if (!newStatus) return;  // Nếu không nhập trạng thái, thoát
+        alert('Hóa đơn đã được xóa thành công');
+        fetchData(); // Tải lại dữ liệu sau khi xóa
+    } catch (error) {
+        alert('Lỗi khi xóa hóa đơn: ' + error.message);
+    }
+};
 
-            try {
-                const response = await fetch(`/api/update-status/${invoiceId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                if (!response.ok) {
-                    throw new Error('Không thể cập nhật trạng thái');
-                }
-                document.getElementById(`status-${invoiceId}`).innerText = newStatus;
-                alert('Trạng thái hóa đơn đã được cập nhật');
-            } catch (error) {
-                alert('Lỗi khi cập nhật trạng thái: ' + error.message);
-            }
+window.updateStatus = async function(invoiceId) {
+    const newStatus = prompt("Nhập trạng thái mới cho hóa đơn (Ví dụ: Đã thanh toán, Chưa thanh toán, Đang xử lý):");
+    if (!newStatus) {
+        alert('Trạng thái mới không được để trống.');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/update-status/${invoiceId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Lỗi cập nhật: ${response.statusText}`);
         }
+
+        document.getElementById(`status-${invoiceId}`).innerText = newStatus;
+        alert('Trạng thái hóa đơn đã được cập nhật thành công');
+    } catch (error) {
+        alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+    }
+};
+
 
         // Gọi hàm fetchData để tải dữ liệu ban đầu
         fetchData();
