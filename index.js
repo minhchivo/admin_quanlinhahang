@@ -1621,6 +1621,79 @@ const sendMessage = async () => {
   }
 };
 
+const crypto = require('crypto');
+const querystring = require('qs'); // Dùng qs để xử lý query string
+
+app.post('/api/vnpay-payment', async (req, res) => {
+  const { amount, orderInfo, returnUrl, userId, bankCode, orderType, locale } = req.body;
+
+  // Kiểm tra thông tin đầu vào
+  if (!amount || !orderInfo || !returnUrl || !userId) {
+    return res.status(400).json({ error: 'Thông tin không hợp lệ' });
+  }
+
+  // Cấu hình VNPay
+  const vnp_TmnCode = 'DLSLIN0G'; // Terminal ID
+  const vnp_HashSecret = 'J56KEWZ8KV3O0AOOYLW596GQ1TSMULOG'; // Secret key
+  const vnp_Url = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'; // VNPay URL
+
+  // Lấy thông tin IP của người dùng
+  const ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket?.remoteAddress || '';
+
+  // Lấy ngày giờ hiện tại để tạo vnp_CreateDate và vnp_TxnRef
+  const date = new Date();
+  const vnp_CreateDate = date.toISOString().replace(/[-:T]/g, '').slice(0, 14); // yyyyMMddHHmmss
+  const vnp_TxnRef = Date.now().toString(); // Mã giao dịch duy nhất (sử dụng timestamp)
+
+  // Cấu hình tham số gửi lên VNPay
+  const vnp_Params = {
+    vnp_Version: '2.1.0',
+    vnp_Command: 'pay',
+    vnp_TmnCode: vnp_TmnCode,
+    vnp_Locale: locale || 'vn', // Mặc định là 'vn' nếu không truyền
+    vnp_CurrCode: 'VND',
+    vnp_TxnRef: vnp_TxnRef,
+    vnp_OrderInfo: orderInfo,
+    vnp_OrderType: orderType || 'billpayment', // Mặc định là 'billpayment'
+    vnp_Amount: amount * 100, // Số tiền nhân 100 theo yêu cầu VNPay
+    vnp_ReturnUrl: returnUrl,
+    vnp_IpAddr: ipAddr,
+    vnp_CreateDate: vnp_CreateDate,
+  };
+
+  // Thêm bankCode nếu được cung cấp
+  if (bankCode) {
+    vnp_Params['vnp_BankCode'] = bankCode;
+  }
+
+  // Sắp xếp tham số theo thứ tự từ điển (alphabetical order)
+  const sortedParams = Object.keys(vnp_Params)
+    .sort()
+    .reduce((result, key) => {
+      result[key] = vnp_Params[key];
+      return result;
+    }, {});
+
+  // Tạo chuỗi query string
+  const queryString = querystring.stringify(sortedParams, { encode: false });
+
+  // Tạo chữ ký (vnp_SecureHash)
+  const hash = crypto.createHmac('sha512', vnp_HashSecret).update(queryString, 'utf8').digest('hex');
+
+  // Gắn chữ ký vào vnp_Params
+  vnp_Params['vnp_SecureHash'] = hash;
+
+  // Tạo URL thanh toán
+  const paymentUrl = `${vnp_Url}?${querystring.stringify(vnp_Params, { encode: false })}`;
+
+  console.log('Query string:', queryString);
+  console.log('Generated hash:', hash);
+  console.log('Generated Payment URL:', paymentUrl);
+
+  // Trả về URL thanh toán
+  res.json({ paymentUrl });
+});
+
 // Sử dụng các route từ router
 app.use('/', router);
 
