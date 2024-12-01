@@ -1,0 +1,164 @@
+
+.chunggiaodien {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c3e50;
+    color: white;
+    padding: 5px 25px;
+    width: 100%; /* Đảm bảo header chiếm toàn bộ chiều rộng màn hình */
+    box-sizing: border-box; /* Đảm bảo padding không làm tăng kích thước */
+    position: fixed; /* Cố định header */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Đảm bảo header nằm trên tất cả */
+}
+
+.admin-header-title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.admin-profile {
+    position: relative;
+}
+
+.admin-profile h5 {
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.admin-profile .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.admin-profile:hover .dropdown-content {
+    display: block;
+}
+
+.admin-profile .dropdown-content a {
+    padding: 10px 50px;
+    text-decoration: none;
+    display: block;
+    color: #333;
+    transition: background-color 0.3s ease;
+}
+
+.admin-profile .dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Layout chính */
+.admin-container {
+    display: flex;
+    min-height: calc(100vh - 80px);
+    margin-top: 20px;
+}
+
+.admin-sidebar {
+    position: fixed;  /* Cố định sidebar */
+    top: 80px;         /* Dịch xuống dưới header */
+    left: 0;           /* Đặt sidebar ở bên trái */
+    width: 17%;        /* Giữ chiều rộng sidebar */
+    height: calc(100vh - 80px);  /* Chiều cao sidebar bằng chiều cao của màn hình */
+    background-color: #2c3e50;
+    padding: 20px;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 500; /* Đảm bảo sidebar luôn trên content */
+}
+
+.admin-sidebar a {
+    display: block;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.admin-sidebar a:hover {
+    background-color: #3498db;
+    transform: translateX(10px);
+}
+
+.admin-content {
+    width: 83%;                    /* Chiếm phần còn lại sau sidebar */
+    background-color: white;
+    padding: 30px;
+    margin-left: 17%;               /* Đẩy content sang bên phải để tránh sidebar */
+    margin-top: 80px;               /* Để tránh bị che khuất bởi header */
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;    /* Căn chỉnh nội dung ở trên */
+    align-items: center;
+    overflow-y: auto;               /* Cho phép cuộn dọc khi nội dung dài */
+    max-height: calc(100vh - 80px); /* Đảm bảo content không vượt quá chiều cao màn hình */
+}
+
+/* Modal */
+.admin-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.admin-modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover effect */
+.admin-sidebar a:hover {
+    background-color: #2980b9;
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .admin-content {
+        width: 100%;
+    }
+}

@@ -6,23 +6,23 @@
     <title>Quản Lý Nhà Hàng</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/giaodien.css"> 
 </head>
-<body>
+<body class="chunggiaodien">
 
-<header>
-    <h1 class="header-title">Quản Lý Nhà Hàng</h1>
-    <div class="profile">
-    <h5>Thông Tin</h5>
+<header class="admin-header">
+    <h1 class="admin-header-title">Quản Lý Nhà Hàng</h1>
+    <div class="admin-profile">
+    <h5><i class="fa-solid fa-bars"></i></h5>
         <div class="dropdown-content">
-            <a href="#" onclick="loadAdminInfo()">Thông Tin</a>
-            <a href="#" onclick="logout()">Đăng Xuất</a>
+            <a href="#" onclick="loadAdminInfo()">Info</a>
+            <a href="#" onclick="logout()">Logout</a>
         </div>
     </div>
 </header>
 
-<div class="container">
-    <div class="sidebar">
+<div class="admin-container">
+    <div class="admin-sidebar">
         <a href="#" onclick="loadPage('trangchu.html')"><i class="fas fa-home"></i> Trang Chủ</a>
         <a href="#" onclick="loadPage('quanlikhachhang.html')"><i class="fas fa-users"></i> Quản Lí Khách Hàng</a>
         <a href="#" onclick="loadPage('quanlithucan.html')"><i class="fas fa-utensils"></i> Quản Lí Thức Ăn</a>
@@ -33,15 +33,13 @@
         <a href="#" onclick="loadPage('contact.html')"><i class="fas fa-envelope"></i> Quản Lý Tin Nhắn</a>
     </div>
 
-    <div class="content" id="content">
-        <p>Chào mừng bạn đến với Restaurant Manager</p>
-        <p>Chọn một mục từ menu bên trái để bắt đầu quản lý.</p>
+    <div class="admin-content" id="content"> <!-- Thêm lớp riêng biệt cho nội dung chính -->
     </div>
+    
     <!-- Modal Structure -->
-<div class="modal" id="adminModal">
-    <div class="modal-content" id="adminInfoContent">
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-modal-content" id="adminInfoContent"></div>
     </div>
-</div>
 
 </div>
 
@@ -88,7 +86,6 @@
                         document.getElementById('name').innerText = data.name;
                         document.getElementById('address').innerText = data.address;
                         document.getElementById('phone').innerText = data.phone;
-                        document.getElementById('email').innerText = data.email || 'N/A';
                         document.getElementById('adminId').innerText = data.adminId;
                         document.getElementById('created_at').innerText = data.created_at;
                     })
