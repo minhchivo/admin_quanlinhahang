@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lí khách hàng</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
-    <style>
-        #add-user-form {
-            display: none; /* Form sẽ ẩn mặc định */
-        }
-    </style>
+    <link rel="stylesheet" href="../css/quanlikhachhang.css">
 </head>
 <body>
-    <h1>Quản lí khách hàng</h1>
+    <h1 class="tieudequanlikhachhang">Quản lí khách hàng</h1>
     <button id="show-add-user-btn">Thêm Khách Hàng Mới</button>
     <form id="add-user-form">
         <h2 id="user-form-title">Thêm Khách Hàng Mới</h2>
@@ -39,27 +34,35 @@
                 let html = '';
 
                 if (data.Users && Object.keys(data.Users).length > 0) {
-                    html += '<h2>Users</h2>';
                     html += '<table><thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Ngày Tạo</th><th>Actions</th></tr></thead><tbody>';
+                    
                     Object.keys(data.Users).forEach(userId => {
                         const user = data.Users[userId];
+                
+                        // Kiểm tra xem tất cả các trường có dữ liệu hợp lệ hay không
+                        if (!user || !user.name || !user.email || !user.phone || !user.address) {
+                            return; // Bỏ qua bản ghi không hợp lệ
+                        }
+                
                         html += `<tr>
-                            <td>${userId || 'N/A'}</td>
-                            <td>${user && user.name ? user.name : 'N/A'}</td>
-                            <td>${user && user.email ? user.email : 'N/A'}</td>
-                            <td>${user && user.phone ? user.phone : 'N/A'}</td>
-                            <td>${user && user.address ? user.address : 'N/A'}</td>
-                            <td>${user && user.created_at ? user.created_at : 'N/A'}</td>
+                            <td>${userId}</td>
+                            <td>${user.name}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone}</td>
+                            <td>${user.address}</td>
+                            <td>${user.created_at || 'N/A'}</td>
                             <td>
-                                <button class="edit-user-btn" data-id="${userId}">Sửa</button>
-                                <button class="delete-user-btn" data-id="${userId}">Xóa</button>
+                                <button class="edit-user-btn" data-id="${userId}"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button class="delete-user-btn" data-id="${userId}"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>`;
                     });
+                
                     html += '</tbody></table>';
                 } else {
                     html = '<p>Không có dữ liệu khách hàng</p>';
                 }
+                
 
                 container.innerHTML = html;
             } catch (error) {
