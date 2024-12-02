@@ -1,0 +1,99 @@
+/* Thiết lập font và màu nền */
+.bodytrangchu {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Container chứa toàn bộ nội dung */
+.containertrangchu {
+    width: 100%;
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+/* Tiêu đề trang */
+header h2 {
+    text-align: center;
+    font-size: 28px;
+    color: #34495e;
+    margin-bottom: 30px;
+}
+
+/* Khối thống kê */
+.dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+/* Card thống kê */
+.stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 22%;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hiệu ứng hover cho card */
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+/* Tiêu đề trong mỗi card */
+.stat-card h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+/* Giá trị trong mỗi card */
+.stat-card p {
+    font-size: 24px;
+    color: #3498db;
+    font-weight: bold;
+}
+
+
+
+.chart-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#revenue-chart {
+    max-width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .stat-card {
+        width: 48%;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        width: 100%;
+    }
+}
+.chart-container {
+    width: 100%;
+    height: 600px;
+    margin-bottom: 20px;
+}
+
+canvas {
+    width: 100%;
+    height: 60%;
+}

@@ -9,14 +9,14 @@ body {
     box-sizing: border-box;
 }
 
-/* Tiêu đề chính */
-.tieudequanlikhachhang {
+
+.tieudequanliban {
     text-align: center;
     font-size: 2.5em;
     color: #2c3e50;
 }
 
-/* Nút thêm khách hàng mới */
+
 button {
     background-color: #2c3e50;
     color: #fff;
@@ -33,7 +33,7 @@ button:hover {
     background-color: #3498db;
 }
 
-#add-user-form {
+#add-table-form {
     display: none;
     background-color: #fff;
     border-radius: 8px;
@@ -43,13 +43,13 @@ button:hover {
     margin: 0 auto;
 }
 
-#add-user-form h2 {
+#add-table-form h2 {
     font-size: 1.8em;
     color: #333;
     margin-bottom: 20px;
 }
 
-#add-user-form input {
+#add-table-form input {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -58,23 +58,23 @@ button:hover {
     font-size: 1em;
 }
 
-#add-user-form input:focus {
+#add-table-form input:focus {
     border-color: #2c3e50;
     outline: none;
 }
 
-#add-user-form button[type="submit"],
-#add-user-form button[type="button"] {
+#add-table-form button[type="submit"],
+#add-table-form button[type="button"] {
     width: 48%;
     margin-top: 20px;
     font-size: 1.1em;
 }
 
-#add-user-form button[type="button"] {
+#add-table-form button[type="button"] {
     background-color: #f44336;
 }
 
-#add-user-form button[type="button"]:hover {
+#add-table-form button[type="button"]:hover {
     background-color: #d32f2f;
 }
 
@@ -122,7 +122,7 @@ table td button:hover {
     background-color: #f57c00;
 }
 
-table td button.delete-user-btn {
+table td button.delete-btn {
     background-color: #f44336;
 }
 
@@ -136,15 +136,15 @@ table td button.delete-user-btn:hover {
     color: #888;
 }
 
-#add-user-form, #data-container {
+#add-table-form, #data-container {
     transition: opacity 0.3s ease-in-out;
 }
 
-#add-user-form.show, #data-container.show {
+#add-table-form.show, #data-container.show {
     opacity: 1;
 }
 
-#add-user-form.hide, #data-container.hide {
+#add-table-form.hide, #data-container.hide {
     opacity: 0;
 }
 
@@ -157,11 +157,11 @@ table td button.delete-user-btn:hover {
         font-size: 2em;
     }
 
-    #add-user-form {
+    #add-table-form {
         max-width: 100%;
     }
 
-    #add-user-form input {
+    #add-table-form input {
         font-size: 1em;
     }
 

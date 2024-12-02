@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Nước Uống</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <link rel="stylesheet" href="../css/quanlinuocuong.css">
     <style>
         #add-drink-form {
             display: none;
@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Quản lý Nước Uống</h1>
+    <h1 class="tieudequanlinuocuong">Quản lý Nước Uống</h1>
     <button id="show-add-drink-btn">Thêm Nước Uống Mới</button>
     <form id="add-drink-form" enctype="multipart/form-data">
         <h2 id="drink-form-title">Thêm Nước Uống Mới</h2>
@@ -29,7 +29,6 @@
     </form>
     
     <div id="data-container"></div>
-    <button onclick="goBack()">Quay lại</button>
 
     <script>
         let editingDrinkId = null;
@@ -58,8 +57,8 @@
                                 <td>${drink.description || ''}</td>
                                 <td>${drink.isAvailable ? 'Có sẵn' : 'Không có sẵn'}</td>
                                 <td>
-                                    <button class="edit-drink-btn" data-id="${drinkId}">Sửa</button>
-                                    <button class="delete-drink-btn" data-id="${drinkId}">Xóa</button>
+                                    <button class="edit-drink-btn" data-id="${drinkId}"><i class="fa-solid fa-pen-to-square"></i>Sửa</button>
+                                    <button class="delete-drink-btn" data-id="${drinkId}"><i class="fa-solid fa-trash"></i>Xóa</button>
                                 </td>
                             </tr>`;
                         }

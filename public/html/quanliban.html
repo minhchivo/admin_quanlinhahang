@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lí Bàn</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <link rel="stylesheet" href="../css/quanliban.css">
     <style>
         #add-table-form {
             display: none; /* Form sẽ ẩn mặc định */
@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Quản Lí Bàn</h1>
+    <h1 class="tieudequanliban">Quản Lí Bàn</h1>
     <button id="show-add-form-btn">Thêm Bàn Mới</button>
     <form id="add-table-form">
         <h2 id="form-title">Thêm Bàn Mới</h2>
@@ -21,9 +21,12 @@
             <option value="1">Có sẵn</option>
             <option value="0">Đã đặt</option>
         </select>
-        <button type="submit">Lưu</button>
-        <button type="button" id="cancel-btn">Hủy</button>
+        <div class="form-actions">
+            <button type="submit">Lưu</button>
+            <button type="button" id="cancel-btn">Hủy</button>
+        </div>
     </form>
+    
     
     <div id="data-container"></div>
 
@@ -56,8 +59,8 @@
                             <td>${table.tableName || 'N/A'}</td>
                             <td>${table.status === '1' ? 'Có sẵn' : 'Đã đặt'}</td>
                             <td>
-                                <button class="edit-btn" data-id="${tableId}">Sửa</button>
-                                <button class="delete-btn" data-id="${tableId}">Xóa</button>
+                                <button class="edit-btn" data-id="${tableId}"><i class="fa-solid fa-pen-to-square"></i>Sửa</button>
+                                <button class="delete-btn" data-id="${tableId}"><i class="fa-solid fa-trash"></i>Xóa</button>
                             </td>
                         </tr>`;
                     });

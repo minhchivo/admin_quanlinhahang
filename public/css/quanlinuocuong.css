@@ -10,7 +10,7 @@ body {
 }
 
 /* Tiêu đề chính */
-.tieudequanlikhachhang {
+.tieudequanlinuocuong{
     text-align: center;
     font-size: 2.5em;
     color: #2c3e50;
@@ -33,7 +33,7 @@ button:hover {
     background-color: #3498db;
 }
 
-#add-user-form {
+#add-drink-form {
     display: none;
     background-color: #fff;
     border-radius: 8px;
@@ -43,13 +43,13 @@ button:hover {
     margin: 0 auto;
 }
 
-#add-user-form h2 {
+#add-drink-form h2 {
     font-size: 1.8em;
     color: #333;
     margin-bottom: 20px;
 }
 
-#add-user-form input {
+#add-drink-form input {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -58,24 +58,68 @@ button:hover {
     font-size: 1em;
 }
 
-#add-user-form input:focus {
+#add-drink-form input:focus {
     border-color: #2c3e50;
     outline: none;
 }
 
-#add-user-form button[type="submit"],
-#add-user-form button[type="button"] {
+#add-drink-form button[type="submit"],
+#add-drink-form button[type="button"] {
     width: 48%;
     margin-top: 20px;
     font-size: 1.1em;
 }
 
-#add-user-form button[type="button"] {
+#add-drink-form button[type="button"] {
     background-color: #f44336;
 }
 
-#add-user-form button[type="button"]:hover {
+#add-drink-form button[type="button"]:hover {
     background-color: #d32f2f;
+}
+#drink-isAvailable {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #fff;
+    color: #333;
+    appearance: none; /* Tắt hình dáng mặc định của select */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+
+/* Thêm hình ảnh mũi tên cho select */
+#drink-isAvailable::after {
+    content: '▼';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #333;
+    font-size: 1rem;
+    pointer-events: none; /* Ngăn mũi tên tương tác với người dùng */
+}
+
+/* Cải thiện diện mạo khi hover */
+#drink-isAvailable:hover {
+    border-color: #2c3e50;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.2);
+}
+
+/* Khi focus vào select */
+#drink-isAvailable:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 5px rgba(0, 128, 0, 0.2);
+    outline: none;
+}
+
+/* Style cho hình ảnh mũi tên trong trình duyệt Chrome */
+#drink-isAvailable::-ms-expand {
+    display: none; /* Ẩn mũi tên mặc định của IE */
 }
 
 /* Bảng danh sách khách hàng */
@@ -109,7 +153,7 @@ table tr:hover {
 }
 
 table td button {
-    background-color: #ff9800;
+    background-color: #f50000;
     color: #fff;
     border: none;
     padding: 8px 15px;
@@ -122,32 +166,35 @@ table td button:hover {
     background-color: #f57c00;
 }
 
-table td button.delete-user-btn {
-    background-color: #f44336;
+table td button.edit-drink-btn {
+    background-color: #f57c00;
 }
 
-table td button.delete-user-btn:hover {
-    background-color: #d32f2f;
+table td button.edit-drink-btn:hover {
+    background-color: #f50000d0;
 }
 
+/* Cải thiện khả năng truy cập và hiển thị khi không có dữ liệu */
 #data-container p {
     text-align: center;
     font-size: 1.2em;
     color: #888;
 }
 
-#add-user-form, #data-container {
+/* Các hiệu ứng chuyển động nhẹ cho các phần tử khi tương tác */
+#add-drink-form, #data-container {
     transition: opacity 0.3s ease-in-out;
 }
 
-#add-user-form.show, #data-container.show {
+#add-drink-form.show, #data-container.show {
     opacity: 1;
 }
 
-#add-user-form.hide, #data-container.hide {
+#add-drink-form.hide, #data-container.hide {
     opacity: 0;
 }
 
+/* Mobile responsiveness */
 @media (max-width: 768px) {
     body {
         padding: 15px;
@@ -157,11 +204,11 @@ table td button.delete-user-btn:hover {
         font-size: 2em;
     }
 
-    #add-user-form {
+    #add-drink-form {
         max-width: 100%;
     }
 
-    #add-user-form input {
+    #add-drink-form input {
         font-size: 1em;
     }
 

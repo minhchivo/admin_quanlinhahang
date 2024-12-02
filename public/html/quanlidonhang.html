@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Hóa Đơn</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <link rel="stylesheet" href="../css/quanlihoadon.css">
 </head>
 <body>
-    <h1>Quản Lý Hóa Đơn</h1>
+    <h1 class="tieudequanlihoadon">Quản Lý Hóa Đơn</h1>
     <div id="data-container"></div>
 
     <script>
@@ -25,8 +25,7 @@
                 let html = '';
 
                 if (data.Invoices) {
-                    html += '<h2>Danh Sách Hóa Đơn</h2>';
-                    html += '<table border="1"><thead><tr><th>Invoice ID</th><th>User ID</th><th>Ngày Tạo</th><th>Trạng Thái</th><th>Phương Thức Thanh Toán</th><th>Tổng Tiền</th><th>Chi Tiết</th><th>Hành Động</th></tr></thead><tbody>';
+                    html += '<table><thead><tr><th>Invoice ID</th><th>User ID</th><th>Ngày Tạo</th><th>Trạng Thái</th><th>Phương Thức Thanh Toán</th><th>Tổng Tiền</th><th>Chi Tiết</th><th>Hành Động</th></tr></thead><tbody>';
                     Object.keys(data.Invoices).forEach(invoiceId => {
                         const invoice = data.Invoices[invoiceId];
                         html += `<tr>
@@ -38,7 +37,7 @@
                             <td>${invoice.totalAmount || 0} VND</td>
                             <td>`;
                         if (invoice.items && Array.isArray(invoice.items)) {
-                            html += '<table border="1"><thead><tr><th>Tên Sản Phẩm</th><th>Loại</th><th>Số Lượng</th><th>Đơn Giá</th></tr></thead><tbody>';
+                            html += '<table><thead><tr><th>Tên Sản Phẩm</th><th>Loại</th><th>Số Lượng</th><th>Đơn Giá</th></tr></thead><tbody>';
                             invoice.items.forEach(item => {
                                 html += `<tr>
                                     <td>${item.productName || 'N/A'}</td>
@@ -54,8 +53,8 @@
 
                         html += '</td>';
                         html += `<td>
-                            <button onclick="deleteInvoice('${invoiceId}')">Xóa</button>
-                            <button onclick="updateStatus('${invoiceId}')">Cập nhật trạng thái</button>
+                            <button class="delete-btn" onclick="deleteInvoice('${invoiceId}')"><i class="fa-solid fa-trash"></i>Xóa</button>
+                            <button class="update-btn" onclick="updateStatus('${invoiceId}')"><i class="fa-solid fa-pen-to-square"></i>Sửa</button>
                         </td>
                         </tr>`;
                     });
@@ -70,50 +69,50 @@
             }
         }
 
-        // Gắn các hàm vào đối tượng `window` để đảm bảo chúng nằm trong phạm vi toàn cục
-window.deleteInvoice = async function(invoiceId) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa hóa đơn ${invoiceId}?`)) return;
+        // Hàm xóa hóa đơn
+        window.deleteInvoice = async function(invoiceId) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa hóa đơn ${invoiceId}?`)) return;
 
-    try {
-        const response = await fetch(`/api/delete-invoice/${invoiceId}`, { method: 'DELETE' });
-        if (!response.ok) {
-            throw new Error(`Lỗi xóa: ${response.statusText}`);
-        }
+            try {
+                const response = await fetch(`/api/delete-invoice/${invoiceId}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    throw new Error(`Lỗi xóa: ${response.statusText}`);
+                }
 
-        alert('Hóa đơn đã được xóa thành công');
-        fetchData(); // Tải lại dữ liệu sau khi xóa
-    } catch (error) {
-        alert('Lỗi khi xóa hóa đơn: ' + error.message);
-    }
-};
+                alert('Hóa đơn đã được xóa thành công');
+                fetchData(); // Tải lại dữ liệu sau khi xóa
+            } catch (error) {
+                alert('Lỗi khi xóa hóa đơn: ' + error.message);
+            }
+        };
 
-window.updateStatus = async function(invoiceId) {
-    const newStatus = prompt("Nhập trạng thái mới cho hóa đơn (Ví dụ: Đã thanh toán, Chưa thanh toán, Đang xử lý):");
-    if (!newStatus) {
-        alert('Trạng thái mới không được để trống.');
-        return;
-    }
+        // Hàm cập nhật trạng thái hóa đơn
+        window.updateStatus = async function(invoiceId) {
+            const newStatus = prompt("Nhập trạng thái mới cho hóa đơn (Ví dụ: Đã thanh toán, Chưa thanh toán, Đang xử lý):");
+            if (!newStatus) {
+                alert('Trạng thái mới không được để trống.');
+                return;
+            }
 
-    try {
-        const response = await fetch(`/api/update-status/${invoiceId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status: newStatus })
-        });
+            try {
+                const response = await fetch(`/api/update-status/${invoiceId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
 
-        if (!response.ok) {
-            throw new Error(`Lỗi cập nhật: ${response.statusText}`);
-        }
+                if (!response.ok) {
+                    throw new Error(`Lỗi cập nhật: ${response.statusText}`);
+                }
 
-        document.getElementById(`status-${invoiceId}`).innerText = newStatus;
-        alert('Trạng thái hóa đơn đã được cập nhật thành công');
-    } catch (error) {
-        alert('Lỗi khi cập nhật trạng thái: ' + error.message);
-    }
-};
-
+                document.getElementById(`status-${invoiceId}`).innerText = newStatus;
+                alert('Trạng thái hóa đơn đã được cập nhật thành công');
+            } catch (error) {
+                alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+            }
+        };
 
         // Gọi hàm fetchData để tải dữ liệu ban đầu
         fetchData();

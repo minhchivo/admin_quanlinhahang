@@ -1,0 +1,183 @@
+.contact-container {
+  display: flex;
+  height: 540px; 
+  flex-direction: row; 
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cải thiện giao diện danh sách người dùng */
+.user-list {
+  width: 30%;
+  border-right: 1px solid #ddd;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #fafafa; /* Tạo nền nhẹ cho danh sách */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Thêm bóng để tách biệt */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.user-item {
+  cursor: pointer;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  transition: all 0.3s ease-in-out; /* Hiệu ứng mượt mà khi hover */
+  display: flex;
+  align-items: center;
+}
+
+.user-item:hover {
+  background-color: #e0e0e0;
+  transform: translateX(5px); /* Hiệu ứng dịch chuyển nhẹ khi hover */
+}
+
+.user-item .user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007bff;
+  margin-right: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.user-item .user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.user-item .user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-item .user-id {
+  font-size: 14px;
+  color: #777;
+}
+
+.user-item .user-status {
+  font-size: 12px;
+  color: green; /* Hiển thị trạng thái (online/offline) */
+}
+
+/* Giao diện phần chi tiết tin nhắn */
+.message-detail {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.message-content {
+  flex-grow: 1;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px); /* Giới hạn chiều cao */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column; /* Sắp xếp các tin nhắn theo chiều dọc */
+  gap: 10px; /* Khoảng cách giữa các tin nhắn */
+}
+
+.message-item {
+  padding: 6px 12px; /* Điều chỉnh padding để tin nhắn gọn gàng */
+  margin: 0; /* Xóa margin để các tin nhắn không bị cách nhau quá nhiều */
+  border-radius: 12px;
+  max-width: 80%; /* Giới hạn chiều rộng tối đa */
+  word-wrap: break-word;
+  display: inline-block; /* Để tin nhắn chỉ chiếm không gian của nó */
+  position: relative;
+  font-size: 14px;
+}
+
+.user-message {
+  background-color: #e6f7ff;
+  text-align: left;  
+  margin-left: 0;
+  border-radius: 12px 12px 12px 0;
+  display: inline-block; 
+  max-width: 100%; /* Chiếm tối đa chiều rộng của tin nhắn */
+}
+
+.admin-message {
+  background-color: #007bff;
+  color: white;
+  text-align: right;
+  margin-right: 0;
+  border-radius: 12px 12px 0 12px;
+  display: inline-block;
+  max-width: 100%; /* Chiếm tối đa chiều rộng của tin nhắn */
+}
+
+.message-item:last-child {
+  margin-bottom: 0; /* Đảm bảo không có khoảng cách dưới tin nhắn cuối cùng */
+}
+
+
+.message-reply {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px;
+  background-color: #ffffff;
+  border-top: 1px solid #ddd;
+  height: 100px;
+  box-sizing: border-box;
+}
+
+textarea {
+  width: 85%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: none;
+  font-size: 14px;
+  background-color: #f9f9f9;
+  box-sizing: border-box;
+}
+
+button {
+  width: 12%;
+  height: 50px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Thêm khoảng cách nhỏ cho các thông báo chi tiết */
+#selectedUser {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
+}

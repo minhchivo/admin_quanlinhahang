@@ -1,15 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Dashboard</title>
+    <link rel="stylesheet" href="../css/trangchu.css">
+</head>
+<body class="bodytrangchu">
+    <div class="containertrangchu">
+        <header>
+            <h2>Chào mừng đến với Dashboard Quản Lý Nhà Hàng</h2>
+        </header>
+        <div class="dashboard">
+            <!-- Các thông số thống kê -->
+            <div class="stat-card">
+                <h3>Tổng Số Khách Hàng</h3>
+                <p id="total-customers">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng Số Hóa Đơn</h3>
+                <p id="total-orders">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng Số Đặt Bàn</h3>
+                <p id="total-bookings">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng Doanh Thu</h3>
+                <p id="total-revenue">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng Số Phản Hồi</h3>
+                <p id="total-feedbacks">Loading...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Tổng Số Bàn</h3>
+                <p id="total-tables">Loading...</p>
+            </div>
+        </div>
 
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Xem Cơ Sở Dữ Liệu</title>
-        <link rel="stylesheet" href="../css/quanlidatabase.css">
-    </head>
-    <body>
-        <h2>Chào mừng bạn đến với Restaurant Manager</h2>
-        <p>Chọn một mục từ menu bên trái để bắt đầu quản lý.</p>
-    </body>
-    </html>
-    
+        <!-- Thêm phần tử canvas để vẽ biểu đồ -->
+        <div class="chart-container">
+            <h3>Biểu đồ thống kê</h3>
+            <canvas id="myChart"></canvas>
+        </div>
+        
+        
+    </div>
+
+</body>
+</html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lí Booking Tables</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <link rel="stylesheet" href="../css/quanlidatban.css">
     <style>
         #booking-form {
             display: none; /* Form sẽ ẩn mặc định */
@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Quản Lí Booking Tables</h1>
+    <h1 class="tieudequanlidatban">Quản Lí Booking Tables</h1>
     <button id="show-add-form-btn">Thêm Booking Mới</button>
     <form id="booking-form">
         <h2 id="form-title">Thêm Booking Mới</h2>
@@ -25,7 +25,6 @@
     </form>
     
     <div id="data-container"></div>
-    <button onclick="goBack()">Quay lại</button>
 
     <script>
         let editingBookingId = null;
@@ -43,7 +42,6 @@
 
                 // Kiểm tra dữ liệu BookingTables
                 if (data.BookingTables && Object.keys(data.BookingTables).length > 0) {
-                    html += '<h2>Booking Tables</h2>';
                     html += '<table id="booking-table"><thead><tr><th>Customer ID</th><th>Table ID</th><th>Booking Date</th><th>Expired Time</th><th>Thao Tác</th></tr></thead><tbody>';
                     Object.keys(data.BookingTables).forEach(bookingId => {
                         const booking = data.BookingTables[bookingId];
@@ -53,8 +51,8 @@
                             <td>${booking && booking.bookingDate ? booking.bookingDate : 'N/A'}</td>
                             <td>${booking && booking.expiredTime ? booking.expiredTime : 'N/A'}</td>
                             <td>
-                                <button class="edit-btn" data-id="${bookingId}">Sửa</button>
-                                <button class="delete-btn" data-id="${bookingId}">Xóa</button>
+                                <button class="edit-btn" data-id="${bookingId}"><i class="fa-solid fa-pen-to-square"></i>Sửa</button>
+                                <button class="delete-btn" data-id="${bookingId}"><i class="fa-solid fa-trash"></i>Xóa</button>
                             </td>
                         </tr>`;
                     });

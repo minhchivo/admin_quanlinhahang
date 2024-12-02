@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lí thức ăn</title>
-    <link rel="stylesheet" href="../css/quanlidatabase.css">
+    <link rel="stylesheet" href="../css/quanlithucan.css">
     <style>
         #add-food-form {
-            display: none; /* Form sẽ ẩn mặc định */
+            display: none; 
         }
     </style>
 </head>
 <body>
-    <h1>Quản lí thức ăn</h1>
+    <h1 class="tieudequanlithucan">Quản lí thức ăn</h1>
     <button id="show-add-food-btn">Thêm Món Mới</button>
     <form id="add-food-form" enctype="multipart/form-data">
         <h2 id="food-form-title">Thêm Món Mới</h2>
@@ -36,7 +36,6 @@
     
     
     <div id="data-container"></div>
-    <button onclick="goBack()">Quay lại</button>
 
     <script>
         let editingFoodId = null;
@@ -70,8 +69,8 @@
                                 <td>${food.description || 'N/A'}</td>
                                 <td>${food.category || 'N/A'}</td>
                                 <td>
-                                    <button class="edit-food-btn" data-id="${foodId}">Sửa</button>
-                                    <button class="delete-food-btn" data-id="${foodId}">Xóa</button>
+                                    <button class="edit-food-btn" data-id="${foodId}"><i class="fa-solid fa-pen-to-square"></i>Sửa</button>
+                                    <button class="delete-food-btn" data-id="${foodId}"><i class="fa-solid fa-trash"></i>Xóa</button>
                                 </td>
                             </tr>`;
                         }

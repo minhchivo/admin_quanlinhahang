@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/giaodien.css"> 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Thêm jQuery CDN trước khi sử dụng bất kỳ mã JavaScript nào -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="chunggiaodien">
 
@@ -44,6 +48,7 @@
 </div>
 
 <script>
+    // Chỉnh sửa hàm loadPage để lấy dữ liệu từ các API trang chủ
     function loadPage(page) {
         console.log("Loading page:", page);
         const contentDiv = document.getElementById('content');
@@ -58,6 +63,9 @@
                 for (let i = 0; i < scripts.length; i++) {
                     eval(scripts[i].innerHTML);
                 }
+
+                // Gọi fetchStats() sau khi trang được tải xong
+                fetchStats();
             })
             .catch(error => {
                 console.error('Error loading page:', error);
@@ -65,6 +73,82 @@
             });
     }
     
+    function fetchStats() {
+        // Lấy dữ liệu từ tất cả các API
+        let promises = [
+            $.get('/api/total-customers'),
+            $.get('/api/total-orders'),
+            $.get('/api/total-bookings'),
+            $.get('/api/total-revenue'),
+            $.get('/api/total-feedbacks'),
+            $.get('/api/total-tables')
+        ];
+    
+        // Đợi tất cả API trả về dữ liệu
+        Promise.all(promises).then(results => {
+            // Cập nhật số liệu sau khi tất cả API trả về
+            $('#total-customers').text(results[0].totalCustomers);
+            $('#total-orders').text(results[1].totalOrders);
+            $('#total-bookings').text(results[2].totalBookings);
+            $('#total-revenue').text(results[3].totalRevenue)
+            $('#total-feedbacks').text(results[4].totalFeedbacks);
+            $('#total-tables').text(results[5].totalTables);
+    
+            // Vẽ biểu đồ
+            drawChart({
+                totalCustomers: results[0].totalCustomers,
+                totalOrders: results[1].totalOrders,
+                totalBookings: results[2].totalBookings,
+                totalFeedbacks: results[4].totalFeedbacks,
+                totalTables: results[5].totalTables
+            });
+            drawRevenueChart(results[3].totalRevenue);
+        });
+    }
+    
+    
+    // Hàm vẽ biểu đồ sử dụng Chart.js
+    function drawChart(data) {
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Customers', 'Orders', 'Bookings', 'Feedbacks', 'Tables'],  // Các nhãn của biểu đồ
+                datasets: [{
+                    label: 'Số liệu nhà hàng',
+                    data: [
+                        data.totalCustomers,  // Dữ liệu lấy từ API
+                        data.totalOrders,
+                        data.totalBookings,
+                        data.totalFeedbacks,
+                        data.totalTables
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
 
     function loadAdminInfo() {
         const modal = document.getElementById('adminModal');
@@ -99,12 +183,12 @@
                 adminInfoContent.innerHTML = '<p>Lỗi khi tải nội dung. Vui lòng thử lại sau.</p>';
             });
     }
-    
+
     function closeModal() {
         const modal = document.getElementById('adminModal');
         modal.style.display = "none";
     }
-    
+
     // Đóng modal khi nhấn bên ngoài modal
     window.onclick = function(event) {
         const modal = document.getElementById('adminModal');
@@ -112,7 +196,6 @@
             modal.style.display = "none";
         }
     }
-    
 
     function logout() {
         fetch('/logout', { method: 'GET' })

@@ -717,20 +717,22 @@ app.put('/api/update-status/:invoiceId', async (req, res) => {
 });
 app.get('/api/get-users', async (req, res) => {
   try {
-    const messagesRef = db.ref('Messages');
-    const snapshot = await messagesRef.once('value');
-    const data = snapshot.val();
+    // Lấy dữ liệu người dùng từ bảng "Users"
+    const usersRef = db.ref('Users');  // Bảng "Users" chứa thông tin người dùng
+    const snapshot = await usersRef.once('value');
+    const usersData = snapshot.val();
 
-    if (!data) {
-      return res.json([]);
+    if (!usersData) {
+      return res.json([]);  // Nếu không có người dùng, trả về mảng rỗng
     }
 
-    const users = Object.keys(data).map(userId => ({
+    // Chuyển dữ liệu thành mảng các đối tượng chứa userId và name
+    const users = Object.keys(usersData).map(userId => ({
       userId,
-      name: data[userId].name || 'Người Dùng',
+      name: usersData[userId].name || 'Người Dùng',  // Lấy tên người dùng từ bảng "Users"
     }));
 
-    res.json(users);
+    res.json(users);  // Trả về danh sách người dùng với thông tin userId và name
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Lỗi khi lấy danh sách người dùng.' });
@@ -1692,6 +1694,100 @@ app.post('/api/vnpay-payment', async (req, res) => {
 
   // Trả về URL thanh toán
   res.json({ paymentUrl });
+});
+
+app.get('/api/total-customers', async (req, res) => {
+  try {
+    const snapshot = await db.ref('Users').once('value');
+    const customers = snapshot.val();
+    
+    const totalCustomers = customers ? Object.keys(customers).length : 0;
+    res.json({ totalCustomers });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng số lượng khách hàng:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng số lượng khách hàng.' });
+  }
+});
+
+// API để tính tổng số lượng đặt bàn
+app.get('/api/total-bookings', async (req, res) => {
+  try {
+    const snapshot = await db.ref('BookingTables').once('value');
+    const bookings = snapshot.val();
+    
+    const totalBookings = bookings ? Object.keys(bookings).length : 0;
+    res.json({ totalBookings });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng số lượng đặt bàn:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng số lượng đặt bàn.' });
+  }
+});
+
+// API để tính tổng số lượng phản hồi
+app.get('/api/total-feedbacks', async (req, res) => {
+  try {
+    const snapshot = await db.ref('Messages').once('value');
+    const feedbacks = snapshot.val();
+    
+    const totalFeedbacks = feedbacks ? Object.keys(feedbacks).length : 0;
+    res.json({ totalFeedbacks });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng số lượng phản hồi:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng số lượng phản hồi.' });
+  }
+});
+
+// API để tính tổng hóa đơn
+app.get('/api/total-orders', async (req, res) => {
+  try {
+    const snapshot = await db.ref('Invoices').once('value');
+    const orders = snapshot.val();
+    
+    const totalOrders = orders ? Object.keys(orders).length : 0;
+    res.json({ totalOrders });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng hóa đơn:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng hóa đơn.' });
+  }
+});
+
+// API để tính tổng tiền trong các hóa đơn
+app.get('/api/total-revenue', async (req, res) => {
+  try {
+    const snapshot = await db.ref('Invoices').once('value');
+    const orders = snapshot.val();
+
+    let totalRevenue = 0;
+    if (orders) {
+      for (const orderId in orders) {
+        totalRevenue += orders[orderId].totalAmount || 0;
+      }
+    }
+
+    res.json({ totalRevenue });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng tiền trong các hóa đơn:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng tiền trong các hóa đơn.' });
+  }
+});
+// API để tính tổng số bàn
+app.get('/api/total-tables', async (req, res) => {
+  try {
+    // Lấy dữ liệu từ Firebase Realtime Database (ví dụ: "Tables")
+    const snapshot = await db.ref('Tables').once('value');
+    const tables = snapshot.val();
+
+    let totalTables = 0;
+    if (tables) {
+      // Nếu có bàn, đếm số lượng bàn
+      totalTables = Object.keys(tables).length; // Đếm số lượng đối tượng trong 'Tables'
+    }
+
+    res.json({ totalTables });
+  } catch (error) {
+    console.error('Lỗi khi tính tổng số bàn:', error);
+    res.status(500).json({ error: 'Lỗi server khi tính tổng số bàn.' });
+  }
 });
 
 // Sử dụng các route từ router
